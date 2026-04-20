@@ -2,20 +2,21 @@
 $host = 'lesbot-db-server.mysql.database.azure.com';
 $db   = 'lms_system';
 $user = 'sufiana_admin';
-$pass = 'Sufi123?!'; 
+$pass = 'Sufi123?!'; // Use your real password here
 $charset = 'utf8mb4';
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 try {
-     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=$charset", $user, $pass, [
-          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-          PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-          // This tells Azure: "I want a secure connection, but don't look for a local cert file"
-          PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-          PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4'
-     ]);
+    // Azure requires specific flags for SSL to work over the internet
+    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=$charset", $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::MYSQL_ATTR_SSL_CA => true,
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false
+    ]);
 } catch (PDOException $e) {
-     die("Neural Link Failed: " . $e->getMessage());
+    // If this fails, it will tell us exactly why
+    die("Neural Link Failed: " . $e->getMessage());
 }
 ?>
