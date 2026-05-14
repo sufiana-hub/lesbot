@@ -239,5 +239,7 @@ try {
     <i class="bi bi-robot fs-3 text-dark"></i>
 </button>
 
+<?php include 'chatbot_component.php'; ?>
+
 </body>
 </html>
