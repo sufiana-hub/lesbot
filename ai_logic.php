@@ -8,9 +8,10 @@ function getLesBotResponse(string $userInput, string $userRole, string $userName
     $apiKey = getenv('GROQ_API_KEY');
 
     // FALLBACK: If getenv is empty (like on your local XAMPP), use your string
-    if (!$apiKey || $apiKey === false) {
-        $apiKey = "PASTE_YOUR_KEY_HERE_FOR_LOCAL_TESTING";
-    }
+if (!$apiKey || $apiKey === false) {
+    return "DEBUG ERROR: Azure cannot find the GROQ_API_KEY variable.";
+}
+
 
     $url = "https://api.groq.com/openai/v1/chat/completions";
     // 2. THE NEURAL KNOWLEDGE (This is where you insert your vision)
