@@ -63,11 +63,9 @@ function getLesBotResponse(string $userInput, string $userRole, string $userName
 
     if (curl_errno($ch)) {
         $error = curl_error($ch);
-        curl_close($ch);
         return "Neural Connection Error: " . $error;
     }
 
-    curl_close($ch);
 
     // 5. PARSE RESPONSE
     $result = json_decode($response, true);
