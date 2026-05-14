@@ -3,10 +3,16 @@
 
 function getLesBotResponse(string $userInput, string $userRole, string $userName): string {
     // 1. API Configuration
-    $apiKey = "PASTE_YOUR_KEY_HERE";
+// 1. API Configuration
+    // Try to get the key from Azure Environment Variables first
+    $apiKey = getenv('GROQ_API_KEY');
+
+    // FALLBACK: If getenv is empty (like on your local XAMPP), use your string
+    if (!$apiKey || $apiKey === false) {
+        $apiKey = "PASTE_YOUR_KEY_HERE_FOR_LOCAL_TESTING";
+    }
 
     $url = "https://api.groq.com/openai/v1/chat/completions";
-
     // 2. THE NEURAL KNOWLEDGE (This is where you insert your vision)
     $systemInstruction = "
     You are 'LesBot', the 24/7 Neural Helpdesk for Lestari Dormitory, UTeM.
