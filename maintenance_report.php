@@ -15,25 +15,28 @@ $categories = $cat_stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $student_id = $_SESSION['std_id'];
-    // Fixed: Using 'category_id' to match your ERD subtype relationship
     $category_id = $_POST['category_id']; 
     $priority = $_POST['priority'];
     $description = trim($_POST['description']);
-    
     $request_id = "REQ-" . date("YmdHis"); 
 
     try {
-        // Saving to your 'maintenance_request' table
-        $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status) 
-                VALUES (?, ?, ?, ?, ?, 'Pending')";
+        // 1. AUTO-ASSIGN LOGIC: Find staff with the lowest current workload
+        $staff_stmt = $pdo->query("SELECT s.staff_id FROM staff s 
+                                   WHERE s.department = 'Maintenance' 
+                                   ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
+                                   LIMIT 1");
+        $assigned_staff = $staff_stmt->fetchColumn();
+
+        // 2. INSERT: If staff found, assign it. If not, set as NULL (Admin will see it).
+        $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id) 
+                VALUES (?, ?, ?, ?, ?, 'In Progress', ?)";
         $stmt = $pdo->prepare($sql);
         
-        if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority])) {
-            $success = "NEURAL LINK ESTABLISHED: Request $request_id submitted successfully!";
+        if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
+            $success = "NEURAL LINK ESTABLISHED: Assigned to Staff ID: $assigned_staff";
         }
-    } catch (PDOException $e) {
-        $error = "Transmission Error: " . $e->getMessage();
-    }
+    } catch (PDOException $e) { $error = "Transmission Error: " . $e->getMessage(); }
 }
 ?>
 
