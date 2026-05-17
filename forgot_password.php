@@ -37,17 +37,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $update->execute([$token, $expiry, $email]);
 
             // --- PHPMailer Settings ---
+// --- GMAIL PRODUCTION SETTINGS (SSL MODE) ---
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
             $mail->Username   = getenv('MAIL_USER'); 
-            $mail->Password   = getenv('MAIL_PASS');
-            $mail->SMTPDebug = 3; // Change 2 to 3 for even more detail
-            $mail->Debugoutput = 'html'; // Makes it easier to read on a browser 
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
-            
-            // SSL Fix for XAMPP/Azure
+            $mail->Password   = getenv('MAIL_PASS'); 
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Change to SMTPS
+            $mail->Port       = 465; // Change to 465
+
             $mail->SMTPOptions = array(
                 'ssl' => array(
                     'verify_peer' => false,
