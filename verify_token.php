@@ -7,44 +7,35 @@ if (!isset($_SESSION['reset_email'])) {
     exit();
 }
 
-$error = ""; // Initialize empty error variable
-
+$error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // FIX: Define variables FIRST before using them in the query
     $token = trim($_POST['token']);
     $new_pass = $_POST['new_pass'];
     $confirm_pass = $_POST['confirm_pass'];
-    $email = trim($_SESSION['reset_email']); 
+    $email = $_SESSION['reset_email'];
 
     if ($new_pass !== $confirm_pass) {
         $error = "NEURAL MISMATCH: Passwords do not match.";
     } else {
         try {
-            date_default_timezone_set('Asia/Kuala_Lumpur');
             $now = date("Y-m-d H:i:s");
-
-            // DBA Logic: Check for valid token AND that it hasn't expired (standard security)
+            // Check if code matches and is not expired
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND reset_token = ? AND token_expiry > ? LIMIT 1");
             $stmt->execute([$email, $token, $now]);
             $user = $stmt->fetch();
 
             if ($user) {
-                // Hash with SHA-256 for standard login compatibility
                 $hashed_pass = hash('sha256', $new_pass);
-
-                // Update password and clear token/expiry for security
                 $update = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, token_expiry = NULL WHERE email = ?");
                 $update->execute([$hashed_pass, $email]);
 
                 unset($_SESSION['reset_email']);
-                echo "<script>alert('ACCESS RESTORED: Neural Link Updated.'); window.location.href='login.php';</script>";
+                echo "<script>alert('ACCESS RESTORED: Your password has been updated.'); window.location.href='login.php';</script>";
                 exit();
             } else {
-                $error = "INVALID OR EXPIRED CODE: The identity fragment does not match.";
+                $error = "INVALID CODE: The code is incorrect or expired.";
             }
-        } catch (PDOException $e) {
-            $error = "CORE ERROR: " . $e->getMessage();
-        }
+        } catch (PDOException $e) { $error = "CORE ERROR: " . $e->getMessage(); }
     }
 }
 ?>

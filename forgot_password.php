@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once 'db_config.php';
-
 require 'phpmailer/Exception.php';
 require 'phpmailer/PHPMailer.php';
 require 'phpmailer/SMTP.php';
@@ -11,7 +10,7 @@ use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
-    $mail = new PHPMailer(true); // FIX: Initialize here so it's always defined
+    $mail = new PHPMailer(true);
 
     try {
         $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ? LIMIT 1");
@@ -23,22 +22,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $token = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             $expiry = date("Y-m-d H:i:s", strtotime("+15 minutes"));
 
-            // One clean update
+            // Save the 6-digit code to the database
             $update = $pdo->prepare("UPDATE users SET reset_token = ?, token_expiry = ? WHERE email = ?");
             $update->execute([$token, $expiry, $email]);
 
+            // --- GMAIL PRODUCTION SETTINGS ---
             $mail->isSMTP();
-            $mail->Host       = 'sandbox.smtp.mailtrap.io';
+            $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Port       = 2525;
-            $mail->Username   = 'aaccc15ccf1332'; 
-            $mail->Password   = '0689c86460b24e'; 
+            $mail->Username   = getenv('MAIL_USER'); // Pulled from Azure Vault
+            $mail->Password   = getenv('MAIL_PASS'); // Pulled from Azure Vault
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
 
-            $mail->setFrom('recovery@lesbot.utem.edu.my', 'LesBot Neural System');
-            $mail->addAddress($email);
+            $mail->setFrom(getenv('MAIL_USER'), 'LesBot Neural System');
+            $mail->addAddress($email); // Sends to the student's real Gmail
             $mail->isHTML(true);
-            $mail->Subject = 'LESBOT | Neural Access Recovery';
-            $mail->Body    = "Your verification code is: <b style='font-size: 20px;'>$token</b>. Expires in 15 minutes.";
+            $mail->Subject = 'LesBot | Identity Verification Code';
+            $mail->Body    = "Your identity verification code is: <b style='font-size: 24px; color: #00d4ff;'>$token</b><br><br>This code expires in 15 minutes.";
 
             $mail->send();
             
@@ -49,7 +50,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "IDENTITY NOT FOUND: Email not registered.";
         }
     } catch (Exception $e) {
-        // Safe error handling
         $error = "Neural Link Error: " . $mail->ErrorInfo;
     }
 }
