@@ -132,16 +132,15 @@ try {
     </style>
 </head>
 <body>
-    
+
 <nav class="neural-nav">
     <a href="index.php" class="nav-brand">LESBOT<span style="color:#fff">•</span></a>
-    <ul class="nav-links-container">
-        <li><a href="student_dashboard.php">UTAMA</a></li>
-        <li><a href="maintenance_report.php">REPORT</a></li>
-        <li><a href="student_penalties.php" class="active">PENALTIES</a></li>
-        <li><a href="student_history.php">HISTORY</a></li>
-    </ul>
-    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" style="font-family: 'Orbitron'; font-size: 0.6rem;">DISCONNECT</a>
+    <div style="display:flex; gap:30px;">
+        <a href="student_dashboard.php" style="color:white; text-decoration:none; font-size:0.75rem; font-family:'Orbitron';">UTAMA</a>
+        <a href="maintenance_report.php" style="color:white; text-decoration:none; font-size:0.75rem; font-family:'Orbitron';">REPORT</a>
+        <a href="student_history.php" style="color:white; text-decoration:none; font-size:0.75rem; font-family:'Orbitron';">HISTORY</a>
+    </div>
+    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-4 fw-bold" style="font-family: 'Orbitron'; font-size: 0.6rem;">DISCONNECT</a>
 </nav>
 
 <div class="container mb-5">
