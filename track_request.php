@@ -1,25 +1,36 @@
 <?php
+/**
+ * LESBOT NEURAL TRACKING
+ * MAINTENANCE STATUS INTERFACE v3.0
+ */
 session_start();
 require_once 'db_config.php';
 
+// 1. NEURAL ACCESS CONTROL
 if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') { 
-    header("Location: login.php"); exit(); 
+    header("Location: login.php"); 
+    exit(); 
 }
 
 $id = $_SESSION['std_id'];
 
 try {
-    $sql = "SELECT mr.request_id, c.category_name, mr.description, mr.status, mr.priority, mr.created_at, u.name AS staff_name, st.phone_num AS staff_phone
+    // 2. DATA ACQUISITION: Merging Maintenance and Staff records
+    $sql = "SELECT mr.request_id, c.category_name, mr.description, mr.status, mr.priority, mr.created_at, u.name AS staff_name
             FROM maintenance_request mr
             JOIN category c ON mr.category_id = c.category_id
             LEFT JOIN staff st ON mr.assigned_staff_id = st.staff_id
             LEFT JOIN users u ON st.staff_id = u.user_id
             WHERE mr.student_id = :id
             ORDER BY mr.created_at DESC";
+            
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['id' => $id]);
     $requests = $stmt->fetchAll();
-} catch (PDOException $e) { die("Neural Link Error: " . $e->getMessage()); }
+
+} catch (PDOException $e) {
+    die("Neural Link Error: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,6 +38,7 @@ try {
 <head>
     <meta charset="utf-8">
     <title>LesBot | Neural Tracking</title>
+    <!-- Modern Cyberpunk Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
@@ -34,6 +46,8 @@ try {
         :root { 
             --lesbot-cyan: #00d4ff; 
             --obsidian: #080a0f; 
+            --neon-red: #ff4d4d;
+            --neon-orange: #ffa500;
             --glass-card: rgba(255, 255, 255, 0.03);
             --neon-border: rgba(0, 212, 255, 0.3);
         }
@@ -41,76 +55,101 @@ try {
         body { 
             background-color: var(--obsidian); 
             background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 80%);
-            color: #ffffff; font-family: 'Rajdhani', sans-serif; margin: 0; padding-top: 130px; min-height: 100vh;
+            color: #ffffff; 
+            font-family: 'Rajdhani', sans-serif; 
+            margin: 0;
+            padding-top: 130px;
+            min-height: 100vh;
         }
 
+        /* --- Floating Navigation --- */
         .neural-nav {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; 
-            background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid var(--neon-border);
-            border-radius: 50px; padding: 12px 35px; display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.9);
+            backdrop-filter: blur(15px); border: 1px solid var(--neon-border);
+            border-radius: 50px; padding: 12px 35px; display: flex;
+            justify-content: space-between; align-items: center; z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
+        .nav-brand { font-family: 'Orbitron'; font-weight: 900; color: var(--lesbot-cyan); text-decoration: none; letter-spacing: 2px; }
 
-        /* --- THE UI FIX: DARK CARD LAYOUT --- */
+        /* --- Main UI Container --- */
         .system-container {
-            background: rgba(0, 0, 0, 0.4) !important; /* FORCED DARK */
+            background: rgba(0, 0, 0, 0.4); 
             border: 1px solid var(--neon-border);
-            border-radius: 40px; padding: 50px; backdrop-filter: blur(20px);
+            border-radius: 40px; 
+            padding: 50px; 
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
 
-        /* Header Row: High Visibility Cyan */
+        /* CARD HEADER (Table Head Replacement) */
         .header-row {
             background: rgba(0, 212, 255, 0.1);
-            border-radius: 15px; margin-bottom: 20px; padding: 15px 0;
+            border-radius: 15px; margin-bottom: 25px; padding: 18px 0;
             display: flex; align-items: center; text-align: center;
-            font-family: 'Orbitron'; font-size: 0.75rem; color: var(--lesbot-cyan);
+            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--lesbot-cyan);
             letter-spacing: 2px; border: 1px solid var(--neon-border);
         }
 
-        /* Data Card: Dark, Bold, Vibrant */
+        /* DATA CARDS */
         .request-card {
-            background: rgba(255, 255, 255, 0.04) !important; /* NO MORE WHITE BACKGROUND */
+            background: rgba(255, 255, 255, 0.04); 
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px; margin-bottom: 15px; padding: 25px;
+            border-radius: 20px; margin-bottom: 18px; padding: 30px;
             display: flex; align-items: center; transition: 0.3s;
         }
-
         .request-card:hover {
             border-color: var(--lesbot-cyan);
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
-            transform: scale(1.01);
+            box-shadow: 0 0 35px rgba(0, 212, 255, 0.2);
+            transform: translateY(-3px);
         }
 
-        /* FONT UPGRADES */
-        .id-val { font-family: 'Orbitron'; color: var(--lesbot-cyan); font-weight: 900; font-size: 0.9rem; text-shadow: 0 0 10px rgba(0,212,255,0.5); }
-        .category-val { font-family: 'Orbitron'; font-weight: 700; color: #ffffff; font-size: 0.8rem; }
-        .desc-val { font-size: 1.15rem; color: #ffffff; font-weight: 500; line-height: 1.5; padding: 0 15px; }
+        /* --- PRIORITY TAGS UPGRADE --- */
+        .priority-tag {
+            display: inline-block; font-family: 'Orbitron'; font-weight: 900;
+            font-size: 0.75rem; padding: 8px 18px; border-radius: 8px;
+            letter-spacing: 2px; text-transform: uppercase; margin-top: 12px;
+            border: 1px solid transparent;
+        }
+        .priority-urgent { background: rgba(255, 77, 77, 0.15); color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 77, 77, 0.3); }
+        .priority-high { background: rgba(255, 165, 0, 0.15); color: var(--neon-orange); border-color: var(--neon-orange); }
+        .priority-medium { background: rgba(0, 212, 255, 0.15); color: var(--lesbot-cyan); border-color: var(--lesbot-cyan); }
+        .priority-low { background: rgba(255, 255, 255, 0.1); color: #aaa; border-color: #444; }
+
+        /* FONT STYLING */
+        .id-val { font-family: 'Orbitron'; color: var(--lesbot-cyan); font-weight: 900; font-size: 0.95rem; text-shadow: 0 0 10px rgba(0,212,255,0.4); }
+        .category-val { font-family: 'Orbitron'; font-weight: 700; color: #ffffff; font-size: 0.9rem; }
+        .desc-val { font-size: 1.15rem; color: #ffffff; font-weight: 500; line-height: 1.6; padding: 0 20px; }
         
         .badge-status { 
-            font-family: 'Orbitron'; font-size: 0.8rem; padding: 10px 20px; 
+            font-family: 'Orbitron'; font-size: 0.85rem; padding: 12px 25px; 
             border-radius: 12px; font-weight: 900; text-transform: uppercase;
         }
 
-        .staff-label { font-family: 'Orbitron'; font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-bottom: 5px; }
+        .staff-label { font-family: 'Orbitron'; font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-bottom: 5px; letter-spacing: 1px; }
 
     </style>
 </head>
 <body>
-
+    
 <nav class="neural-nav">
-    <a href="index.php" style="font-family:'Orbitron'; color:var(--lesbot-cyan); text-decoration:none; font-weight:900;">LESBOT •</a>
-    <div style="display:flex; gap:25px;">
-        <a href="student_dashboard.php" style="color:white; text-decoration:none; font-size:0.7rem; font-family:'Orbitron';">UTAMA</a>
-        <a href="maintenance_report.php" style="color:white; text-decoration:none; font-size:0.7rem; font-family:'Orbitron';">REPORT</a>
-        <a href="student_history.php" style="color:white; text-decoration:none; font-size:0.7rem; font-family:'Orbitron';">HISTORY</a>
-    </div>
+    <a href="index.php" class="nav-brand">LESBOT<span style="color:#fff">•</span></a>
+    <ul class="nav-links-container">
+        <li><a href="student_dashboard.php">UTAMA</a></li>
+        <li><a href="maintenance_report.php">REPORT</a></li>
+        <li><a href="student_penalties.php" class="active">PENALTIES</a></li>
+        <li><a href="student_history.php">HISTORY</a></li>
+    </ul>
+    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" style="font-family: 'Orbitron'; font-size: 0.6rem;">DISCONNECT</a>
 </nav>
 
-<div class="container">
+<div class="container mb-5">
     <div class="system-container">
-        <h2 class="text-center mb-5" style="font-family:'Orbitron'; font-weight:900; letter-spacing:5px;">TRACK <span style="color:var(--lesbot-cyan);">REQUESTS</span></h2>
+        <h2 class="text-center mb-5" style="font-family:'Orbitron'; font-weight:900; letter-spacing:8px;">TRACK <span style="color:var(--lesbot-cyan);">REQUESTS</span></h2>
 
         <!-- HEADER ROW -->
-        <div class="header-row d-none d-lg-flex">
+        <div class="header-row d-none d-lg-flex row mx-0">
             <div class="col-2">IDENTIFIER</div>
             <div class="col-2">CLASSIFICATION</div>
             <div class="col-5">NEURAL DESCRIPTION</div>
@@ -118,22 +157,32 @@ try {
         </div>
 
         <?php if (empty($requests)): ?>
-            <div class="text-center py-5 opacity-50">NO ACTIVE LOGS FOUND</div>
+            <div class="text-center py-5 opacity-50 font-orbitron">NO ACTIVE LOGS DETECTED IN ARCHIVE</div>
         <?php else: ?>
             <?php foreach ($requests as $r): ?>
-                <div class="request-card row">
+                <div class="request-card row mx-0">
                     <div class="col-lg-2 text-center text-lg-start mb-3 mb-lg-0">
-                        <div class="id-val">#<?= $r['request_id'] ?></div>
-                        <div class="small opacity-50"><?= date('d M Y', strtotime($r['created_at'])) ?></div>
+                        <div class="id-val">#<?= htmlspecialchars($r['request_id']) ?></div>
+                        <div class="small opacity-50 mt-1"><?= date('d M Y', strtotime($r['created_at'])) ?></div>
                     </div>
                     
                     <div class="col-lg-2 text-center text-lg-start mb-3 mb-lg-0">
                         <div class="category-val"><?= strtoupper($r['category_name']) ?></div>
-                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger mt-1" style="font-size:0.5rem;"><?= strtoupper($r['priority']) ?></span>
+                        
+                        <!-- DYNAMIC PRIORITY TAGS -->
+                        <?php 
+                            $p = strtoupper($r['priority']);
+                            $p_class = 'priority-low';
+                            if($p == 'URGENT' || $p == 'CRITICAL') $p_class = 'priority-urgent';
+                            elseif($p == 'HIGH') $p_class = 'priority-high';
+                            elseif($p == 'MEDIUM') $p_class = 'priority-medium';
+                        ?>
+                        <div class="priority-tag <?= $p_class ?>">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <?= $p ?>
+                        </div>
                     </div>
 
                     <div class="col-lg-5 mb-3 mb-lg-0">
-                        <!-- WHITE BOLD TEXT ON DARK BACKGROUND = POP-UP -->
                         <div class="desc-val"><?= nl2br(htmlspecialchars($r['description'])) ?></div>
                     </div>
 
@@ -142,11 +191,13 @@ try {
                             $status = $r['status'];
                             $bg = ($status == 'Pending') ? 'bg-warning text-dark' : (($status == 'In Progress') ? 'bg-info text-dark' : 'bg-success');
                         ?>
-                        <div class="badge-status <?= $bg ?>"><?= $status ?></div>
+                        <div class="badge-status <?= $bg ?>"><?= strtoupper($status) ?></div>
                         
-                        <div class="mt-3">
-                            <div class="staff-label">ASSIGNED STAFF</div>
-                            <div class="small fw-bold text-info"><?= strtoupper($r['staff_name'] ?? 'AUTO-SEARCHING...') ?></div>
+                        <div class="mt-4">
+                            <div class="staff-label">AUTHENTICATED PERSONNEL</div>
+                            <div class="small fw-bold text-info" style="font-family:'Orbitron'; letter-spacing:1px;">
+                                <?= strtoupper($r['staff_name'] ?? 'AUTO-SEARCHING...') ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,13 +205,14 @@ try {
         <?php endif; ?>
 
         <div class="text-center mt-5">
-            <a href="student_dashboard.php" class="btn btn-outline-info px-5 py-3 rounded-pill fw-bold" style="font-family:'Orbitron'; font-size:0.7rem; letter-spacing:2px;">
-                RETURN TO HUB
+            <a href="student_dashboard.php" class="btn btn-outline-info px-5 py-3 rounded-pill fw-bold" style="font-family:'Orbitron'; font-size:0.75rem; letter-spacing:2px;">
+                <i class="bi bi-arrow-left me-2"></i> RETURN TO HUB
             </a>
         </div>
     </div>
 </div>
 
+<!-- 24/7 AI HELPFLOW COMPONENT -->
 <?php include 'chatbot_component.php'; ?>
 
 </body>
