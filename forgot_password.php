@@ -1,3 +1,8 @@
+// TEMPORARY DEBUG CODE
+if (!getenv('MAIL_PASS')) {
+    die("SYSTEM ERROR: Azure cannot see your MAIL_PASS variable. Check Azure settings.");
+}
+
 <?php
 session_start();
 require_once 'db_config.php';
@@ -42,6 +47,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->Body    = "Your identity verification code is: <b style='font-size: 24px; color: #00d4ff;'>$token</b><br><br>This code expires in 15 minutes.";
 
             $mail->send();
+
+            // --- GMAIL PRODUCTION SETTINGS ---
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = getenv('MAIL_USER');
+            $mail->Password   = getenv('MAIL_PASS');
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+
+            // ADD THIS BLOCK TO FIX CERTIFICATE ERRORS
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
             
             $_SESSION['reset_email'] = $email;
             header("Location: verify_token.php");
