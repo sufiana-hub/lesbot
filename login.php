@@ -177,6 +177,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .link-footer { margin-top: 35px; font-size: 0.8rem; }
         .link-footer a { color: var(--lesbot-cyan); text-decoration: none; margin: 0 10px; transition: 0.3s; }
         .link-footer a:hover { text-shadow: 0 0 10px var(--lesbot-cyan); }
+
+            /* --- Chatbot Styling Refined --- */
+    .glass-card {
+        background: rgba(8, 10, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    }
     </style>
 </head>
 <body>
@@ -211,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <a href="signup.php">Create Fragment</a>
         </div>
     </div>
-    
+
 <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
     <i class="bi bi-robot fs-3 text-dark"></i>
 </button>
