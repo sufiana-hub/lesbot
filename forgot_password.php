@@ -8,6 +8,8 @@ require 'phpmailer/SMTP.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// Rest of your logic...
+
 // Check Azure connection
 if (!getenv('MAIL_PASS')) {
     die("SYSTEM ERROR: Azure settings not found. Ensure MAIL_USER and MAIL_PASS are saved in the portal.");
