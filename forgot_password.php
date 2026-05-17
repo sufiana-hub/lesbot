@@ -103,6 +103,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php if($error) echo "<p class='text-danger mt-3 small'>⚠️ $error</p>"; ?>
         <div class="mt-4"><a href="login.php" class="text-white-50 text-decoration-none small">← Back to Login</a></div>
     </div>
+
+    <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
+    <i class="bi bi-robot fs-3 text-dark"></i>
+</button>
+
+
     <?php include 'chatbot_component.php'; ?>
+    
 </body>
 </html>

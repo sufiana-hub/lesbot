@@ -139,6 +139,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <!-- 4. CHATBOT COMPONENT (Ensure this file exists or remove this line to test) -->
+     <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
+    <i class="bi bi-robot fs-3 text-dark"></i>
+</button>
+
+<?php include 'chatbot_component.php'; ?>
+
     <?php 
         if (file_exists('chatbot_component.php')) {
             include 'chatbot_component.php'; 
