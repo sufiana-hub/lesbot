@@ -16,12 +16,54 @@ try {
     $u_stmt->execute([$id]);
     $user = $u_stmt->fetch();
 
-    // 3. READ: Fetch FULL Semester History
-    $h_stmt = $pdo->prepare("SELECT * FROM student_room_history 
-                             WHERE matric_number = ? 
-                             ORDER BY move_in_date DESC");
+    $all_activities = [];
+
+    // 3. AUDIT LOGIC A: Fetch Room History (Residencies)
+    $h_stmt = $pdo->prepare("SELECT room_number, semester_session, move_in_date as activity_date FROM student_room_history WHERE matric_number = ?");
     $h_stmt->execute([$id]);
-    $full_history = $h_stmt->fetchAll();
+    while ($row = $h_stmt->fetch()) {
+        $all_activities[] = [
+            'date' => $row['activity_date'],
+            'type' => 'RESIDENCY',
+            'icon' => 'bi-house-door-fill',
+            'color' => '#00d4ff', // Lesbot Cyan
+            'title' => "Room Assigned: " . $row['room_number'],
+            'desc' => "Commenced session " . $row['semester_session']
+        ];
+    }
+
+    // 4. AUDIT LOGIC B: Fetch Maintenance Logs
+    $m_stmt = $pdo->prepare("SELECT description, status, created_at FROM maintenance_request WHERE student_id = ?");
+    $m_stmt->execute([$id]);
+    while ($row = $m_stmt->fetch()) {
+        $all_activities[] = [
+            'date' => $row['created_at'],
+            'type' => 'MAINTENANCE',
+            'icon' => 'bi-tools',
+            'color' => '#ffc107', // Warning Yellow
+            'title' => "Maintenance Reported",
+            'desc' => "Log: " . $row['description'] . " | Current Status: " . strtoupper($row['status'])
+        ];
+    }
+
+    // 5. AUDIT LOGIC C: Fetch Penalty Logs
+    $p_stmt = $pdo->prepare("SELECT pt.description as reason, sp.amount, sp.date_issued FROM student_penalties sp JOIN penalty_types pt ON sp.penalty_type_id = pt.penalty_type_id WHERE sp.matric_number = ?");
+    $p_stmt->execute([$id]);
+    while ($row = $p_stmt->fetch()) {
+        $all_activities[] = [
+            'date' => $row['date_issued'],
+            'type' => 'PENALTY',
+            'icon' => 'bi-exclamation-octagon-fill',
+            'color' => '#ff4d4d', // Danger Red
+            'title' => "Penalty Issued: RM " . number_format($row['amount'], 2),
+            'desc' => "Violation Record: " . $row['reason']
+        ];
+    }
+
+    // 6. CHRONOLOGICAL SORT: Newest activities at the top
+    usort($all_activities, function($a, $b) {
+        return strtotime($b['date']) <=> strtotime($a['date']);
+    });
 
 } catch (PDOException $e) {
     die("Neural Link Error: " . $e->getMessage());
@@ -54,7 +96,7 @@ try {
             min-height: 100vh;
         }
 
-        /* --- Floating Navigation (Glassmorphic) --- */
+        /* --- Floating Navigation --- */
         .neural-nav {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.8);
@@ -71,7 +113,7 @@ try {
         }
         .nav-links-container a:hover, .nav-links-container a.active { color: var(--lesbot-cyan); background: rgba(0, 212, 255, 0.1); }
 
-        /* --- System Dashboard Container --- */
+        /* --- Timeline Dashboard Container --- */
         .system-container {
             background: var(--glass); border: 1px solid var(--glass-border);
             border-radius: 30px; padding: 40px; backdrop-filter: blur(10px);
@@ -79,11 +121,11 @@ try {
 
         .header-title { font-family: 'Orbitron'; font-weight: 900; letter-spacing: 3px; color: var(--lesbot-cyan); }
         
-        /* --- Timeline Audit Styling --- */
+        /* --- Timeline Item Styling --- */
         .timeline-item { 
-            border-left: 2px solid var(--glass-border); 
+            border-left: 2px solid rgba(0, 212, 255, 0.2); 
             padding-left: 30px; 
-            margin-bottom: 30px; 
+            margin-bottom: 35px; 
             position: relative; 
             transition: 0.3s;
         }
@@ -91,13 +133,10 @@ try {
             content: ''; position: absolute; left: -9px; top: 0; 
             width: 16px; height: 16px; background: var(--obsidian); 
             border: 2px solid var(--lesbot-cyan); border-radius: 50%; 
-            box-shadow: 0 0 10px var(--lesbot-cyan);
         }
-        .timeline-item:hover { border-left-color: var(--lesbot-cyan); }
 
         .sem-tag { 
-            font-family: 'Orbitron'; font-weight: 900; font-size: 0.65rem; 
-            color: var(--obsidian); background: var(--lesbot-cyan); 
+            font-family: 'Orbitron'; font-weight: 900; font-size: 0.6rem; 
             padding: 4px 12px; border-radius: 4px; text-transform: uppercase;
         }
 
@@ -106,16 +145,13 @@ try {
             color: white; font-family: 'Orbitron'; font-size: 0.65rem;
             padding: 8px 18px; border-radius: 8px; transition: 0.3s; text-decoration: none;
         }
-        .btn-neural-tool:hover { background: var(--lesbot-cyan); color: var(--obsidian); border-color: var(--lesbot-cyan); }
+        .btn-neural-tool:hover { background: var(--lesbot-cyan); color: #000; border-color: var(--lesbot-cyan); }
 
-        /* 🖨️ PRINT OPTIMIZATION */
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
-            .neural-nav, .no-print { display: none !important; }
-            .system-container { background: none !important; border: none !important; padding: 0; }
-            .timeline-item { border-left: 2px solid black !important; }
-            .timeline-item::before { border: 2px solid black !important; background: black !important; }
-            .sem-tag { border: 1px solid black !important; background: #eee !important; color: black !important; }
+            .neural-nav, .no-print, .lesbot-chat-container { display: none !important; }
+            .system-container { border: none !important; }
+            .timeline-item { border-left-color: black !important; }
             .header-title { color: black !important; text-align: center; }
         }
     </style>
@@ -136,46 +172,45 @@ try {
 <div class="container mt-4 mb-5">
     <div class="text-center mb-5 no-print">
         <h2 class="header-title">AUDIT <span class="text-white">TRAIL</span></h2>
-        <p class="text-white-50 small" style="letter-spacing: 2px;">RESIDENCY LOG ARCHIVE • ENTITY: <?= strtoupper($user['name']); ?></p>
+        <p class="text-white-50 small" style="letter-spacing: 2px;">NEURAL LOG ARCHIVE • ENTITY: <?= strtoupper($user['name']); ?></p>
         
         <div class="mt-4">
             <button onclick="window.print()" class="btn-neural-tool me-2">
                 <i class="bi bi-printer me-2"></i> GENERATE PDF
             </button>
-            <a href="export.php" class="btn-neural-tool">
+            <a href="export_data.php" class="btn-neural-tool">
                 <i class="bi bi-file-earmark-arrow-down me-2"></i> EXPORT CSV
             </a>
         </div>
     </div>
 
     <div class="system-container shadow-lg">
-        <?php if (empty($full_history)): ?>
+        <?php if (empty($all_activities)): ?>
             <div class="text-center py-5">
                 <i class="bi bi-archive fs-1 text-muted mb-3"></i>
-                <p class="text-cyan-bright" style="font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px;">NEURAL ARCHIVE EMPTY: NO LOGS FOUND</p>
+                <p class="text-info" style="font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px;">NEURAL ARCHIVE EMPTY: NO LOGS DETECTED</p>
             </div>
         <?php else: ?>
             <div class="px-md-4">
-                <?php foreach($full_history as $index => $log): ?>
-                    <div class="timeline-item">
+                <?php foreach($all_activities as $activity): ?>
+                    <div class="timeline-item" style="border-left-color: <?= $activity['color'] ?>;">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <span class="sem-tag"><?= htmlspecialchars($log['semester_session']); ?></span>
-                                <?php if ($index === 0): ?>
-                                    <span class="badge bg-success bg-opacity-25 text-success ms-2 no-print" style="font-size: 0.55rem; border: 1px solid rgba(25, 135, 84, 0.5);">CURRENT</span>
-                                <?php endif; ?>
+                                <span class="sem-tag" style="background: <?= $activity['color'] ?>; color: #000;">
+                                    <?= $activity['type']; ?>
+                                </span>
                             </div>
                             <span class="small text-white-50" style="font-family: 'Orbitron'; font-size: 0.65rem;">
-                                <i class="bi bi-calendar3 me-2"></i><?= date('d M Y', strtotime($log['move_in_date'])); ?>
+                                <i class="bi bi-calendar3 me-2"></i><?= date('d M Y | H:i', strtotime($activity['date'])); ?>
                             </span>
                         </div>
                         
-                        <h4 class="fw-bold mb-1" style="font-family: 'Rajdhani'; color: #fff;">Bilik: <span class="text-info"><?= htmlspecialchars($log['room_number']); ?></span></h4>
+                        <h5 class="fw-bold mb-1" style="font-family: 'Rajdhani'; color: #fff;">
+                            <i class="bi <?= $activity['icon'] ?> me-2" style="color: <?= $activity['color'] ?>;"></i>
+                            <?= htmlspecialchars($activity['title']); ?>
+                        </h5>
                         <p class="small text-white-50 mb-0">
-                            <i class="bi bi-geo-alt me-1"></i> 
-                            <?php 
-                                echo (strpos(strtoupper($log['room_number']), 'A') === 0) ? "Residential Block A (Male)" : "Residential Block B (Female)"; 
-                            ?>
+                            <?= htmlspecialchars($activity['desc']); ?>
                         </p>
                     </div>
                 <?php endforeach; ?>
@@ -189,28 +224,6 @@ try {
         </a>
     </div>
 </div>
-
-
-
-<div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan);">
-    <div class="card-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
-        <span style="font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); letter-spacing: 2px;">LESBOT 24/7 HELPFLOW</span>
-        <button onclick="toggleLesBot()" class="btn-close btn-close-white" style="font-size: 0.6rem;"></button>
-    </div>
-    <div id="chat-body" class="p-3" style="height: 350px; overflow-y: auto; font-family: 'Rajdhani';">
-        <div class="mb-3"><small class="text-info">LesBot:</small><br>Identity verified. How can I assist you tonight?</div>
-    </div>
-    <div class="p-3 border-top border-secondary">
-        <div class="input-group">
-            <input type="text" id="user-msg" class="form-control bg-dark text-white border-secondary small" placeholder="Ask anything...">
-            <button class="btn btn-outline-info" onclick="sendNeuralMessage()"><i class="bi bi-send"></i></button>
-        </div>
-    </div>
-</div>
-
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
 
 <?php include 'chatbot_component.php'; ?>
 
