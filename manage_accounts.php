@@ -72,7 +72,7 @@ $users = $all_users->fetchAll();
         /* --- THE REFINED ROLE BADGES --- */
         .role-badge {
             font-family: 'Orbitron';
-            font-size: 0.65rem; /* Scaled down for elegance */
+            font-size: 0.70rem; /* Scaled down for elegance */
             font-weight: 900;
             padding: 6px 16px;
             border-radius: 6px;
