@@ -128,6 +128,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         .neural-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 35px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
         .alert-custom { border-radius: 12px; border: none; font-weight: bold; font-size: 0.85rem; }
+
+            /* --- Chatbot Styling Refined --- */
+    .glass-card {
+        background: rgba(8, 10, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    }
     </style>
 </head>
 <body>
