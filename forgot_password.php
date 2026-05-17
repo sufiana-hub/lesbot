@@ -1,8 +1,3 @@
-// TEMPORARY DEBUG CODE
-if (!getenv('MAIL_PASS')) {
-    die("SYSTEM ERROR: Azure cannot see your MAIL_PASS variable. Check Azure settings.");
-}
-
 <?php
 session_start();
 require_once 'db_config.php';
@@ -13,8 +8,17 @@ require 'phpmailer/SMTP.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// Check Azure connection
+if (!getenv('MAIL_PASS')) {
+    die("SYSTEM ERROR: Azure settings not found. Ensure MAIL_USER and MAIL_PASS are saved in the portal.");
+}
+
+$error = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
+    
+    // FIX: Initialize $mail here so it is never undefined
     $mail = new PHPMailer(true);
 
     try {
@@ -27,37 +31,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $token = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             $expiry = date("Y-m-d H:i:s", strtotime("+15 minutes"));
 
-            // Save the 6-digit code to the database
             $update = $pdo->prepare("UPDATE users SET reset_token = ?, token_expiry = ? WHERE email = ?");
             $update->execute([$token, $expiry, $email]);
 
-            // --- GMAIL PRODUCTION SETTINGS ---
+            // --- PHPMailer Settings ---
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = getenv('MAIL_USER'); // Pulled from Azure Vault
-            $mail->Password   = getenv('MAIL_PASS'); // Pulled from Azure Vault
+            $mail->Username   = getenv('MAIL_USER'); 
+            $mail->Password   = getenv('MAIL_PASS'); 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
-
-            $mail->setFrom(getenv('MAIL_USER'), 'LesBot Neural System');
-            $mail->addAddress($email); // Sends to the student's real Gmail
-            $mail->isHTML(true);
-            $mail->Subject = 'LesBot | Identity Verification Code';
-            $mail->Body    = "Your identity verification code is: <b style='font-size: 24px; color: #00d4ff;'>$token</b><br><br>This code expires in 15 minutes.";
-
-            $mail->send();
-
-            // --- GMAIL PRODUCTION SETTINGS ---
-            $mail->isSMTP();
-            $mail->Host       = 'smtp.gmail.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = getenv('MAIL_USER');
-            $mail->Password   = getenv('MAIL_PASS');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
-
-            // ADD THIS BLOCK TO FIX CERTIFICATE ERRORS
+            
+            // SSL Fix for XAMPP/Azure
             $mail->SMTPOptions = array(
                 'ssl' => array(
                     'verify_peer' => false,
@@ -65,63 +51,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'allow_self_signed' => true
                 )
             );
-            
-            $_SESSION['reset_email'] = $email;
-            header("Location: verify_token.php");
-            exit();
+
+            $mail->setFrom(getenv('MAIL_USER'), 'LesBot Neural System');
+            $mail->addAddress($email); 
+            $mail->isHTML(true);
+            $mail->Subject = 'LesBot | Identity Verification Code';
+            $mail->Body    = "Your security code: <b style='font-size:24px;'>$token</b><br>Valid for 15 mins.";
+
+            if($mail->send()) {
+                $_SESSION['reset_email'] = $email;
+                header("Location: verify_token.php");
+                exit();
+            }
         } else {
-            $error = "IDENTITY NOT FOUND: Email not registered.";
+            $error = "IDENTITY NOT FOUND: This email is not registered.";
         }
     } catch (Exception $e) {
+        // Safe check: Only use $mail->ErrorInfo if PHPMailer triggered the error
         $error = "Neural Link Error: " . $mail->ErrorInfo;
+    } catch (PDOException $e) {
+        $error = "Database Error: " . $e->getMessage();
     }
 }
 ?>
-<!-- Rest of your HTML stays the same -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>LesBot | Recover Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0B0E14; color: #A7C7E7; font-family: 'Rajdhani'; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(167, 199, 231, 0.3); border-radius: 30px; padding: 40px; width: 100%; max-width: 400px; }
+        body { background-color: #0B0E14; color: #A7C7E7; font-family: 'Rajdhani'; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(167, 199, 231, 0.3); border-radius: 30px; padding: 40px; width: 100%; max-width: 450px; text-align: center; }
+        .form-control { background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 12px; margin-bottom: 15px; }
+        .btn-neural { background: #00d4ff; color: black; font-family: 'Orbitron'; font-weight: 700; border-radius: 12px; border: none; padding: 15px; width: 100%; transition: 0.3s; }
     </style>
 </head>
 <body>
-    <div class="glass-card text-center">
-        <h2 style="font-family: 'Orbitron';">RECOVERY</h2>
-        <p class="small mb-4">Initialize Identity Verification</p>
+    <div class="glass-card shadow-lg">
+        <h2 style="font-family: 'Orbitron'; letter-spacing: 3px;">RECOVERY</h2>
+        <p class="small text-white-50 mb-4">Initialize Identity Verification</p>
         <form method="POST">
-            <input type="email" name="email" class="form-control mb-3 bg-dark text-white border-info" placeholder="Enter Registered Email" required>
-            <button type="submit" class="btn btn-info w-100 fw-bold">SEND VERIFICATION CODE</button>
+            <input type="email" name="email" class="form-control" placeholder="Registered Email" required>
+            <button type="submit" class="btn btn-neural">SEND VERIFICATION CODE</button>
         </form>
-        <?php if(isset($error)) echo "<p class='text-danger mt-3'>$error</p>"; ?>
+        <?php if($error) echo "<p class='text-danger mt-3 small'>⚠️ $error</p>"; ?>
+        <div class="mt-4"><a href="login.php" class="text-white-50 text-decoration-none small">← Back to Login</a></div>
     </div>
-
-    <div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan);">
-    <div class="card-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
-        <span style="font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); letter-spacing: 2px;">LESBOT 24/7 HELPFLOW</span>
-        <button onclick="toggleLesBot()" class="btn-close btn-close-white" style="font-size: 0.6rem;"></button>
-    </div>
-    <div id="chat-body" class="p-3" style="height: 350px; overflow-y: auto; font-family: 'Rajdhani';">
-        <div class="mb-3"><small class="text-info">LesBot:</small><br>Identity verified. How can I assist you tonight?</div>
-    </div>
-    <div class="p-3 border-top border-secondary">
-        <div class="input-group">
-            <input type="text" id="user-msg" class="form-control bg-dark text-white border-secondary small" placeholder="Ask anything...">
-            <button class="btn btn-outline-info" onclick="sendNeuralMessage()"><i class="bi bi-send"></i></button>
-        </div>
-    </div>
-</div>
-
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
-
-<?php include 'chatbot_component.php'; ?>
-
+    <?php include 'chatbot_component.php'; ?>
 </body>
 </html>
