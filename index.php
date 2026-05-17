@@ -161,7 +161,7 @@
     <div class="d-flex align-items-center"> 
         <a href="index.php" class="nav-links-modern">UTAMA</a>
         <a href="javascript:void(0)" onclick="toggleLesBot()" class="nav-links-modern">CHATBOT</a>
-        <a href="https://portal.utem.edu.my/" target="_blank" class="nav-links-modern">UTeM <i class="bi bi-box-arrow-up-right small"></i></a>
+        <a href="https://www.utem.edu.my/en/" target="_blank" class="nav-links-modern">UTeM <i class="bi bi-box-arrow-up-right small"></i></a>
         
         <div class="ms-3 d-flex gap-2 align-items-center">
             <a href="signup.php" class="btn-signup-pill">SIGNUP</a>
