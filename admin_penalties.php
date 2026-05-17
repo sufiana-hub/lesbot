@@ -149,15 +149,17 @@ $students = $pdo->query("SELECT matric_number, room_number FROM student")->fetch
                 </select>
             </div>
 
-            <div class="mb-4">
-                <label class="input-label">VIOLATION CLASSIFICATION</label>
-                <select name="type_id" class="form-select" required>
-                    <option value="" disabled selected>Select Violation Type...</option>
-                    <?php foreach($types as $t): ?>
-                        <option value="<?= $t['penalty_type_id'] ?>"><?= strtoupper($t['description']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+<div class="mb-4">
+    <label class="input-label">VIOLATION CLASSIFICATION (DORM RULES)</label>
+    <select name="type_id" class="form-select" required>
+        <option value="" disabled selected>Identify Violation Type...</option>
+        <?php foreach($types as $t): ?>
+            <option value="<?= $t['penalty_type_id'] ?>">
+                [CODE: <?= str_pad($t['penalty_type_id'], 3, '0', STR_PAD_LEFT) ?>] <?= $t['description'] ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
 
             <div class="mb-5">
                 <label class="input-label">FINES AMOUNT (RM)</label>
