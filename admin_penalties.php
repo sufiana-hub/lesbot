@@ -56,6 +56,18 @@ $students = $pdo->query("SELECT s.matric_number, u.name FROM student s JOIN user
 </head>
 <body>
 
+<nav class="neural-nav">
+    <a href="admin_dashboard.php" class="text-white text-decoration-none" style="font-family: 'Orbitron'; font-weight: 900;">LESBOT <span style="color: var(--lesbot-cyan);">•</span></a>
+    <ul class="nav-links-container">
+        <li><a href="admin_dashboard.php" class="active">OVERVIEW</a></li>
+        <li><a href="manage_accounts.php">ACCOUNTS</a></li>
+        <li><a href="admin_maintenance.php">MAINTENANCE</a></li>
+        <li><a href="admin_penalties.php">PENALTIES</a></li>
+        <li><a href="admin_audit_trail.php">AUDIT</a></li>
+    </ul>
+    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-4 font-orbitron" style="font-size: 0.6rem;">DISCONNECT</a>
+</nav>
+
 <div class="container">
     <div class="system-container shadow-lg">
         <h2 class="text-center mb-5" style="font-family:'Orbitron'; font-weight:900;">ISSUE <span style="color:var(--lesbot-red);">PENALTY</span></h2>
