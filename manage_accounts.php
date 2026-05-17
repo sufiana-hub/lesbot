@@ -8,7 +8,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
 
 $admin_id = $_SESSION['std_id'] ?? 'AD001';
 
-// --- LOG EVERY SECOND: ACCESS PULSE ---
+// --- LOG ACCESS PULSE ---
 try {
     $pdo->prepare("INSERT INTO system_audit_trail (admin_id, action_type, action_details) VALUES (?, 'ACCESS_HUB', 'Admin monitored entity archive hub')")->execute([$admin_id]);
 } catch (Exception $e) {}
@@ -18,7 +18,6 @@ if (isset($_GET['delete_id'])) {
     $target_id = $_GET['delete_id'];
     try {
         $pdo->beginTransaction();
-
         $stmtCheck = $pdo->prepare("SELECT name, role FROM users WHERE user_id = ?");
         $stmtCheck->execute([$target_id]);
         $userData = $stmtCheck->fetch();
@@ -26,12 +25,11 @@ if (isset($_GET['delete_id'])) {
         if ($userData) {
             $t_name = $userData['name'];
             $t_role = $userData['role'];
-
             $pdo->prepare("DELETE FROM users WHERE user_id = ? AND role != 'Admin'")->execute([$target_id]);
 
             $details = "CRITICAL PURGE | ROLE: $t_role | NAME: $t_name";
-            $stmtAudit = $pdo->prepare("INSERT INTO system_audit_trail (admin_id, action_type, target_entity, action_details) VALUES (?, 'ENTITY_PURGE', ?, ?)");
-            $stmtAudit->execute([$admin_id, $target_id, $details]);
+            $pdo->prepare("INSERT INTO system_audit_trail (admin_id, action_type, target_entity, action_details) VALUES (?, 'ENTITY_PURGE', ?, ?)")
+                ->execute([$admin_id, $target_id, $details]);
 
             $pdo->commit();
             header("Location: manage_accounts.php?msg=purged"); exit();
@@ -54,51 +52,78 @@ $users = $all_users->fetchAll();
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root { --lesbot-cyan: #00d4ff; --obsidian: #080a0f; --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(0, 212, 255, 0.2); }
-        body { background-color: var(--obsidian); background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.07) 0%, transparent 80%); color: #FFFFFF; font-family: 'Rajdhani', sans-serif; margin: 0; padding-top: 120px; min-height: 100vh; }
-        
-        .neural-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 35px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        .nav-links-container { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
-        .nav-links-container a { color: rgba(255, 255, 255, 0.7); text-decoration: none; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px; padding: 8px 15px; transition: 0.3s; }
-        .nav-links-container a.active { color: var(--lesbot-cyan); text-shadow: 0 0 10px var(--lesbot-cyan); }
-        
-        .system-container { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 35px; padding: 50px; backdrop-filter: blur(15px); }
-
-        /* --- ENHANCED ROLE BADGES --- */
-        .role-badge {
-            font-family: 'Orbitron';
-            font-size: 0.75rem; /* Enormous compared to before */
-            font-weight: 900;
-            padding: 8px 18px;
-            border-radius: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: inline-block;
-            border: 1px solid transparent;
+        :root { 
+            --lesbot-cyan: #00d4ff; 
+            --lesbot-red: #ff4d4d;
+            --lesbot-amber: #ff9d00;
+            --obsidian: #080a0f; 
+            --glass-border: rgba(0, 212, 255, 0.2); 
         }
         
-        /* High-Contrast Role colors */
-        .badge-admin { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255,255,255,0.4); }
-        .badge-staff { background: rgba(0, 212, 255, 0.1); color: var(--lesbot-cyan); border-color: var(--lesbot-cyan); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
-        .badge-student { background: rgba(167, 199, 231, 0.1); color: #A7C7E7; border-color: #A7C7E7; }
+        body { 
+            background-color: var(--obsidian); 
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.07) 0%, transparent 80%); 
+            color: #FFFFFF; font-family: 'Rajdhani', sans-serif; margin: 0; padding-top: 120px; min-height: 100vh; 
+        }
 
-        .id-text { font-family: 'Orbitron'; color: var(--lesbot-cyan); font-weight: 700; font-size: 0.85rem; }
-        .name-text { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .neural-nav { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 35px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        .system-container { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 35px; padding: 50px; backdrop-filter: blur(15px); }
+
+        /* --- VISION: ENLARGED & COLOR-CODED BADGES --- */
+        .role-badge {
+            font-family: 'Orbitron';
+            font-size: 0.85rem; /* Significant increase in size */
+            font-weight: 900;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: inline-block;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        /* Admin Category: Neon Red */
+        .badge-admin { 
+            background: rgba(255, 77, 77, 0.1); 
+            color: var(--lesbot-red); 
+            border-color: var(--lesbot-red);
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);
+        }
+
+        /* Staff Category: Neon Amber/Orange */
+        .badge-staff { 
+            background: rgba(255, 157, 0, 0.1); 
+            color: var(--lesbot-amber); 
+            border-color: var(--lesbot-amber);
+            box-shadow: 0 0 15px rgba(255, 157, 0, 0.2);
+        }
+
+        /* Student Category: Neon Cyan */
+        .badge-student { 
+            background: rgba(0, 212, 255, 0.1); 
+            color: var(--lesbot-cyan); 
+            border-color: var(--lesbot-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .id-text { font-family: 'Orbitron'; color: var(--lesbot-cyan); font-weight: 700; font-size: 0.9rem; }
+        .name-text { font-weight: 700; font-size: 1.15rem; letter-spacing: 0.5px; }
 
         .action-remove { padding: 8px 20px; border-radius: 10px; background: rgba(255, 75, 43, 0.1); border: 1px solid #ff4b2b; color: #ff4b2b; font-family: 'Orbitron'; font-size: 0.65rem; text-decoration: none; transition: 0.3s; font-weight: 900; }
         .action-remove:hover { background: #ff4b2b; color: white; box-shadow: 0 0 20px #ff4b2b; }
+        
+        .protected-tag { font-family: 'Orbitron'; font-size: 0.7rem; color: rgba(255,255,255,0.3); letter-spacing: 2px; font-weight: 700; }
     </style>
 </head>
 <body>
 
 <nav class="neural-nav">
     <a href="admin_dashboard.php" style="font-family:'Orbitron'; color:var(--lesbot-cyan); text-decoration:none; font-weight:900; letter-spacing:2px;">LESBOT •</a>
-    <ul class="nav-links-container">
-        <li><a href="admin_dashboard.php">OVERVIEW</a></li>
-        <li><a href="manage_accounts.php" class="active">ACCOUNTS</a></li>
-        <li><a href="admin_maintenance.php">MAINTENANCE</a></li>
-        <li><a href="admin_audit_trail.php">AUDIT</a></li>
-    </ul>
+    <div class="d-flex gap-4">
+        <a href="admin_dashboard.php" style="color:white; text-decoration:none; font-size:0.7rem; font-family:'Orbitron'; opacity:0.7;">DASHBOARD</a>
+        <a href="manage_accounts.php" style="color:var(--lesbot-cyan); text-decoration:none; font-size:0.7rem; font-family:'Orbitron'; font-weight:900;">ACCOUNTS</a>
+    </div>
     <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-4 fw-bold font-orbitron" style="font-size: 0.6rem;">DISCONNECT</a>
 </nav>
 
@@ -124,9 +149,12 @@ $users = $all_users->fetchAll();
                         <td class="py-4">
                             <?php 
                                 $r = $u['role'];
-                                $badgeClass = ($r == 'Admin') ? 'badge-admin' : (($r == 'Staff') ? 'badge-staff' : 'badge-student');
+                                // Logic to assign the correct Vision color
+                                $badgeClass = 'badge-student';
+                                if($r == 'Admin') $badgeClass = 'badge-admin';
+                                if($r == 'Staff') $badgeClass = 'badge-staff';
                             ?>
-                            <span class="role-badge <?= $badgeClass ?>"><?= strtoupper($r) ?></span>
+                            <span class="role-badge <?= $badgeClass ?>"><?= $r ?></span>
                         </td>
                         <td class="text-end py-4">
                             <?php if($u['role'] !== 'Admin'): ?>
@@ -134,7 +162,7 @@ $users = $all_users->fetchAll();
                                     <i class="bi bi-trash3-fill me-2"></i> REMOVE
                                 </a>
                             <?php else: ?>
-                                <span class="text-white-50 small font-orbitron opacity-50" style="letter-spacing: 2px;">CORE_PROTECTED</span>
+                                <span class="protected-tag">CORE_PROTECTED</span>
                             <?php endif; ?>
                         </td>
                     </tr>
