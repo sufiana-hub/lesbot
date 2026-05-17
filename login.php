@@ -1,28 +1,45 @@
 <?php
+/**
+ * LESBOT NEURAL LOGIN
+ * STRICT AUTHENTICATION PROTOCOL v3.0
+ */
 session_start();
 require_once 'db_config.php';
+
+$error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $identifier = trim($_POST['identifier']); 
     $pass = $_POST['password'];
-    $hashed_pass = hash('sha256', $pass); //
+    
+    // Passwords are case-sensitive by nature of the Hash (SHA-256)
+    $hashed_pass = hash('sha256', $pass); 
 
     try {
-        // Authenticate via Supertype 'users'
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE (user_id = :id OR email = :id) AND password = :pass LIMIT 1");
+        /** 
+         * DBA SECURITY UPGRADE: 
+         * We use the 'BINARY' keyword to force case-sensitivity in the database.
+         * This ensures 'B0324' != 'b0324' and 'ADMIN1' != 'admin1'.
+         */
+        $sql = "SELECT * FROM users 
+                WHERE (BINARY user_id = :id OR BINARY email = :id) 
+                AND BINARY password = :pass 
+                LIMIT 1";
+                
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(['id' => $identifier, 'pass' => $hashed_pass]);
         $user = $stmt->fetch();
 
         if ($user) {
-            // Store common session data
+            // Initialize Neural Session
             $_SESSION['std_id']    = $user['user_id'];
             $_SESSION['full_name'] = $user['name'];
             $_SESSION['role']      = $user['role'];
             
-            // ROLE-BASED REDIRECTION
+            // REDIRECTION LOGIC
             switch ($user['role']) {
-              case 'Admin':
-              header("Location: admin_dashboard.php"); // Takes the 'Head of Fellow' to the core
+                case 'Admin':
+                    header("Location: admin_dashboard.php");
                     break;
                 case 'Staff':
                     header("Location: staff_dashboard.php");
@@ -33,7 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             exit();
         } else {
-            $error = "ACCESS DENIED: NEURAL MISMATCH";
+            // Triggered if characters match but CASE does not match
+            $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your case-sensitivity (UPPER/lower case).";
         }
     } catch (PDOException $e) { 
         $error = "CORE ERROR: " . $e->getMessage(); 
@@ -47,7 +65,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LesBot | Neural Login</title>
+    <!-- Modern Cyberpunk Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
             --pastel-blue: #A7C7E7;
@@ -55,17 +75,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             --deep-obsidian: #0B0E14;
             --glass: rgba(255, 255, 255, 0.05);
             --neon-border: rgba(167, 199, 231, 0.3);
+            --lesbot-cyan: #00d4ff;
         }
 
         body {
-            margin: 0; padding: 0; height: 100vh;
+            margin: 0; padding: 0; min-height: 100vh;
             background-color: var(--deep-obsidian);
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(167, 199, 231, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(106, 90, 205, 0.1) 0%, transparent 40%);
+            /* Deep radial glow aesthetic */
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
             font-family: 'Rajdhani', sans-serif;
             display: flex; justify-content: center; align-items: center;
             color: var(--soft-cyan);
+            overflow: hidden;
         }
 
         .login-container {
@@ -76,81 +97,123 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 30px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             text-align: center; width: 100%; max-width: 420px;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        .login-container h2 {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--pastel-blue);
-            letter-spacing: 5px; font-size: 2rem;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-container h2 { 
+            font-family: 'Orbitron'; 
+            color: var(--pastel-blue); 
+            letter-spacing: 5px; 
+            font-size: 2.2rem; 
+            margin-bottom: 5px;
         }
 
         .form-group { margin-bottom: 25px; text-align: left; }
-        label { display: block; color: var(--pastel-blue); font-size: 0.8rem; margin-bottom: 8px; }
-
-        input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--neon-border);
-            padding: 15px; border-radius: 12px; color: white; outline: none; box-sizing: border-box;
+        
+        label { 
+            display: block; 
+            color: var(--lesbot-cyan); 
+            font-size: 0.65rem; 
+            margin-bottom: 8px; 
+            font-family: 'Orbitron'; 
+            letter-spacing: 2px;
+            font-weight: 700;
         }
 
-        .login-button {
-            width: 100%; padding: 15px; border-radius: 12px; border: none;
-            background: linear-gradient(45deg, #7FA8D1, #A7C7E7);
-            font-family: 'Orbitron', sans-serif; cursor: pointer; transition: 0.4s;
+        input { 
+            width: 100%; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid var(--neon-border); 
+            padding: 15px; 
+            border-radius: 12px; 
+            color: white; 
+            outline: none; 
+            font-family: 'Rajdhani';
+            transition: 0.3s;
         }
 
-        .login-button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(167, 199, 231, 0.3); }
-        .error-message { color: #FF6B6B; margin-top: 15px; font-size: 0.8rem; }
+        input:focus {
+            border-color: var(--lesbot-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .login-button { 
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: none; 
+            background: linear-gradient(45deg, #00d4ff, #A7C7E7); 
+            color: #000;
+            font-family: 'Orbitron'; 
+            font-weight: 900; 
+            letter-spacing: 2px;
+            cursor: pointer; 
+            transition: 0.4s; 
+            margin-top: 10px;
+        }
+
+        .login-button:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4); 
+            filter: brightness(1.1);
+        }
+
+        .error-message { 
+            color: #FF4D4D; 
+            margin-top: 20px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            border: 1px solid #FF4D4D;
+            background: rgba(255, 77, 77, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .link-footer { margin-top: 35px; font-size: 0.8rem; }
+        .link-footer a { color: var(--lesbot-cyan); text-decoration: none; margin: 0 10px; transition: 0.3s; }
+        .link-footer a:hover { text-shadow: 0 0 10px var(--lesbot-cyan); }
     </style>
 </head>
 <body>
+
     <div class="login-container">
         <h2>LESBOT</h2>
-        <p style="font-size: 0.7rem; letter-spacing: 3px; color: rgba(167,199,231,0.6);">NEURAL NETWORK LOGIN</p>
+        <p class="small opacity-50 text-uppercase mb-5" style="letter-spacing: 3px; font-size: 0.6rem;">Initialize Strict Neural Auth</p>
         
         <form method="POST">
             <div class="form-group">
-                <label>IDENTITY (MATRIX / EMAIL/ ID)</label>
-                <input type="text" name="identifier" required placeholder="Initialize ID...">
+                <label>IDENTITY (CASE SENSITIVE)</label>
+                <input type="text" name="identifier" required placeholder="User ID / Email..." autocomplete="off">
             </div>
+            
             <div class="form-group">
-                <label>ACCESS KEY</label>
+                <label>ACCESS KEY (CASE SENSITIVE)</label>
                 <input type="password" name="password" required placeholder="••••••••">
             </div>
             
-            <button type="submit" class="login-button">INITIALIZE</button>
+            <button type="submit" class="login-button">STABLISH LINK</button>
 
-            <?php if (isset($error)): ?>
-                <p class="error-message">⚠️ <?php echo $error; ?></p>
+            <?php if (!empty($error)): ?>
+                <div class="error-message">
+                    <i class="bi bi-shield-lock-fill me-2"></i> <?php echo $error; ?>
+                </div>
             <?php endif; ?>
         </form>
 
-        <div style="margin-top: 30px; font-size: 0.8rem;">
-            <a href="forgot_password.php" style="color: var(--pastel-blue); text-decoration: none;">Recover Key</a> | 
-            <a href="signup.php" style="color: var(--pastel-blue); text-decoration: none;">Create Identity</a>
+        <div class="link-footer">
+            <a href="forgot_password.php">Recover Access</a>
+            <span class="opacity-25">|</span>
+            <a href="signup.php">Create Fragment</a>
         </div>
     </div>
 
-    <div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan);">
-    <div class="card-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
-        <span style="font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); letter-spacing: 2px;">LESBOT 24/7 HELPFLOW</span>
-        <button onclick="toggleLesBot()" class="btn-close btn-close-white" style="font-size: 0.6rem;"></button>
-    </div>
-    <div id="chat-body" class="p-3" style="height: 350px; overflow-y: auto; font-family: 'Rajdhani';">
-        <div class="mb-3"><small class="text-info">LesBot:</small><br>Identity verified. How can I assist you tonight?</div>
-    </div>
-    <div class="p-3 border-top border-secondary">
-        <div class="input-group">
-            <input type="text" id="user-msg" class="form-control bg-dark text-white border-secondary small" placeholder="Ask anything...">
-            <button class="btn btn-outline-info" onclick="sendNeuralMessage()"><i class="bi bi-send"></i></button>
-        </div>
-    </div>
-</div>
-
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
-
-<?php include 'chatbot_component.php'; ?>
+    <!-- Integrate the 24/7 Neural AI Component -->
+    <?php include 'chatbot_component.php'; ?>
 
 </body>
 </html>
