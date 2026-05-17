@@ -38,13 +38,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // --- PHPMailer Settings ---
 // --- GMAIL PRODUCTION SETTINGS (SSL MODE) ---
+// --- GMAIL PRODUCTION SETTINGS ---
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
             $mail->Username   = getenv('MAIL_USER'); 
             $mail->Password   = getenv('MAIL_PASS'); 
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Change to SMTPS
-            $mail->Port       = 465; // Change to 465
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Use SMTPS
+            $mail->Port       = 465; // Use 465
 
             $mail->SMTPOptions = array(
                 'ssl' => array(
