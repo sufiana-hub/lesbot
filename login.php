@@ -144,6 +144,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </button>
 
 <?php include 'chatbot_component.php'; ?>
-s
+
 </body>
 </html>
