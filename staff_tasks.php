@@ -1,6 +1,10 @@
 <?php
 session_start();
 require_once 'db_config.php';
+require_once 'watchdog.php'; // Include the watchdog file
+
+// Every time a staff member opens this page, the system checks for expired holds
+runNeuralWatchdog($pdo);
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Staff') { 
     header("Location: login.php"); exit(); 
