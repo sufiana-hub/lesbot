@@ -19,7 +19,6 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="utf-8">
     <title>LesBot | Neural Audit Trail</title>
 
