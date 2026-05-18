@@ -63,8 +63,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>LesBot | Neural Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FIX: ADD THIS LINE BELOW TO SHOW THE ROBOT ICON -->
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
+        /* Keep your existing styles here */
         :root {
             --pastel-blue: #A7C7E7;
             --soft-cyan: #E0F2F7;
@@ -134,10 +138,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <!-- 24/7 Robot Support Icon -->
-    <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998; cursor: pointer;">
-        <i class="bi bi-robot fs-3 text-dark"></i>
-    </button>
+<!-- High-Visibility Robot Button -->
+<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
+    <i class="bi bi-robot fs-3 text-dark"></i>
+</button>
 
-    <?php include 'chatbot_component.php'; ?>
+<?php include 'chatbot_component.php'; ?>
+s
 </body>
 </html>
