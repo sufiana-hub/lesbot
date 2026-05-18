@@ -28,7 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $year_sem = "YEAR $year SEM $sem";
 
     $plain_pw = $_POST['pass'];
-    $hashed_pw = hash('sha256', $plain_pw);
+// Use this in your signup/registration files:
+$hashed_pw = password_hash($_POST['pass'], PASSWORD_ARGON2ID);
 
     // 3. HIERARCHICAL ROOM VALIDATION (DBA DOMAIN CAP)
     /**

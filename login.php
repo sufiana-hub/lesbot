@@ -1,7 +1,7 @@
 <?php
 /**
  * LESBOT NEURAL LOGIN
- * STRICT AUTHENTICATION PROTOCOL v3.0
+ * HIGH-LEVEL ENCRYPTION & STRICT IDENTITY PROTOCOL v4.0
  */
 session_start();
 require_once 'db_config.php';
@@ -11,26 +11,28 @@ $error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $identifier = trim($_POST['identifier']); 
     $pass = $_POST['password'];
-    
-    // Passwords are case-sensitive by nature of the Hash (SHA-256)
-    $hashed_pass = hash('sha256', $pass); 
 
     try {
         /** 
          * DBA SECURITY UPGRADE: 
-         * We use the 'BINARY' keyword to force case-sensitivity in the database.
-         * This ensures 'B0324' != 'b0324' and 'ADMIN1' != 'admin1'.
+         * 1. Use 'BINARY' to force case-sensitivity on the Identifier (ID/Email).
+         * 2. We ONLY fetch the user data here. We do not check the password in SQL
+         *    because high-level hashes cannot be compared via simple strings.
          */
         $sql = "SELECT * FROM users 
                 WHERE (BINARY user_id = :id OR BINARY email = :id) 
-                AND BINARY password = :pass 
                 LIMIT 1";
                 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['id' => $identifier, 'pass' => $hashed_pass]);
+        $stmt->execute(['id' => $identifier]);
         $user = $stmt->fetch();
 
-        if ($user) {
+        /**
+         * 3. HIGH-LEVEL VERIFICATION:
+         * password_verify() is the industry standard. It handles the 
+         * complex salt and algorithm logic (Argon2id/BCrypt) automatically.
+         */
+        if ($user && password_verify($pass, $user['password'])) {
             // Initialize Neural Session
             $_SESSION['std_id']    = $user['user_id'];
             $_SESSION['full_name'] = $user['name'];
@@ -38,20 +40,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             // REDIRECTION LOGIC
             switch ($user['role']) {
-                case 'Admin':
-                    header("Location: admin_dashboard.php");
-                    break;
-                case 'Staff':
-                    header("Location: staff_dashboard.php");
-                    break;
-                case 'Student':
-                    header("Location: student_dashboard.php");
-                    break;
+                case 'Admin': header("Location: admin_dashboard.php"); break;
+                case 'Staff': header("Location: staff_dashboard.php"); break;
+                case 'Student': header("Location: student_dashboard.php"); break;
             }
             exit();
         } else {
-            // Triggered if characters match but CASE does not match
-            $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your case-sensitivity (UPPER/lower case).";
+            // Triggered if ID doesn't exist OR password/case is wrong
+            $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your case-sensitivity or key credentials.";
         }
     } catch (PDOException $e) { 
         $error = "CORE ERROR: " . $e->getMessage(); 
@@ -65,9 +61,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LesBot | Neural Login</title>
-    <!-- Modern Cyberpunk Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
             --pastel-blue: #A7C7E7;
@@ -81,12 +77,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         body {
             margin: 0; padding: 0; min-height: 100vh;
             background-color: var(--deep-obsidian);
-            /* Deep radial glow aesthetic */
             background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
             font-family: 'Rajdhani', sans-serif;
             display: flex; justify-content: center; align-items: center;
             color: var(--soft-cyan);
-            overflow: hidden;
         }
 
         .login-container {
@@ -97,115 +91,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 30px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             text-align: center; width: 100%; max-width: 420px;
-            animation: fadeIn 0.8s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-container h2 { 
-            font-family: 'Orbitron'; 
-            color: var(--pastel-blue); 
-            letter-spacing: 5px; 
-            font-size: 2.2rem; 
-            margin-bottom: 5px;
-        }
-
+        .login-container h2 { font-family: 'Orbitron'; color: var(--pastel-blue); letter-spacing: 5px; font-size: 2.2rem; }
         .form-group { margin-bottom: 25px; text-align: left; }
-        
-        label { 
-            display: block; 
-            color: var(--lesbot-cyan); 
-            font-size: 0.65rem; 
-            margin-bottom: 8px; 
-            font-family: 'Orbitron'; 
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        input { 
-            width: 100%; 
-            background: rgba(0,0,0,0.4); 
-            border: 1px solid var(--neon-border); 
-            padding: 15px; 
-            border-radius: 12px; 
-            color: white; 
-            outline: none; 
-            font-family: 'Rajdhani';
-            transition: 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--lesbot-cyan);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-        }
-
-        .login-button { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 12px; 
-            border: none; 
-            background: linear-gradient(45deg, #00d4ff, #A7C7E7); 
-            color: #000;
-            font-family: 'Orbitron'; 
-            font-weight: 900; 
-            letter-spacing: 2px;
-            cursor: pointer; 
-            transition: 0.4s; 
-            margin-top: 10px;
-        }
-
-        .login-button:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4); 
-            filter: brightness(1.1);
-        }
-
-        .error-message { 
-            color: #FF4D4D; 
-            margin-top: 20px; 
-            font-size: 0.75rem; 
-            font-weight: bold; 
-            border: 1px solid #FF4D4D;
-            background: rgba(255, 77, 77, 0.1);
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .link-footer { margin-top: 35px; font-size: 0.8rem; }
-        .link-footer a { color: var(--lesbot-cyan); text-decoration: none; margin: 0 10px; transition: 0.3s; }
-        .link-footer a:hover { text-shadow: 0 0 10px var(--lesbot-cyan); }
-
-            /* --- Chatbot Styling Refined --- */
-    .glass-card {
-        background: rgba(8, 10, 15, 0.9);
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-    }
+        label { display: block; color: var(--lesbot-cyan); font-size: 0.65rem; margin-bottom: 8px; font-family: 'Orbitron'; letter-spacing: 2px; font-weight: 700; }
+        input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--neon-border); padding: 15px; border-radius: 12px; color: white; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--lesbot-cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.2); }
+        .login-button { width: 100%; padding: 15px; border-radius: 12px; border: none; background: linear-gradient(45deg, #00d4ff, #A7C7E7); color: #000; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.4s; margin-top: 10px; }
+        .login-button:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 212, 255, 0.4); }
+        .error-message { color: #FF4D4D; margin-top: 20px; font-size: 0.75rem; font-weight: bold; border: 1px solid #FF4D4D; background: rgba(255, 77, 77, 0.1); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
-
     <div class="login-container">
-        <h2>LESBOT</h2>
-        <p class="small opacity-50 text-uppercase mb-5" style="letter-spacing: 3px; font-size: 0.6rem;">Initialize Strict Neural Auth</p>
+        <h2 style="margin-bottom: 5px;">LESBOT</h2>
+        <p class="small opacity-50 text-uppercase mb-5" style="letter-spacing: 3px; font-size: 0.6rem;">High-Level Neural Auth Active</p>
         
         <form method="POST">
             <div class="form-group">
                 <label>IDENTITY (CASE SENSITIVE)</label>
-                <input type="text" name="identifier" required placeholder="User ID / Email..." autocomplete="off">
+                <input type="text" name="identifier" required placeholder="ID / Email...">
             </div>
-            
             <div class="form-group">
-                <label>ACCESS KEY (CASE SENSITIVE)</label>
+                <label>ACCESS KEY (HIGH ENCRYPTION)</label>
                 <input type="password" name="password" required placeholder="••••••••">
             </div>
             
-            <button type="submit" class="login-button">STABLISH LINK</button>
+            <button type="submit" class="login-button">ESTABLISH LINK</button>
 
             <?php if (!empty($error)): ?>
                 <div class="error-message">
@@ -214,20 +127,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
         </form>
 
-        <div class="link-footer">
-            <a href="forgot_password.php">Recover Access</a>
-            <span class="opacity-25">|</span>
-            <a href="signup.php">Create Fragment</a>
+        <div style="margin-top: 35px; font-size: 0.8rem;">
+            <a href="forgot_password.php" style="color: var(--lesbot-cyan); text-decoration: none;">Recover Access</a> | 
+            <a href="signup.php" style="color: var(--lesbot-cyan); text-decoration: none;">Create Identity</a>
         </div>
     </div>
 
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
+    <!-- 24/7 Robot Support Icon -->
+    <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998; cursor: pointer;">
+        <i class="bi bi-robot fs-3 text-dark"></i>
+    </button>
 
-
-    <!-- Integrate the 24/7 Neural AI Component -->
     <?php include 'chatbot_component.php'; ?>
-
 </body>
 </html>
