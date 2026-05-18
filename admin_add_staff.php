@@ -15,6 +15,7 @@ $admin_id = $_SESSION['std_id'] ?? 'AD001';
 $success_msg = "";
 $error_msg = "";
 
+
 // 2. HANDLE SUCCESS REDIRECT LOGIC
 if (isset($_GET['status']) && $_GET['status'] == 'success') {
     $new_id = $_GET['id'];
@@ -50,8 +51,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // 4. INSERT PARENT ENTITY (users)
-        $stmtUser = $pdo->prepare("INSERT INTO users (user_id, name, email, password, role) VALUES (?, ?, ?, ?, 'Staff')");
-        $stmtUser->execute([$staff_id, $name, $email, $password]);
+// 2. Insert Parent: users (Now includes the reset flag)
+$stmtUser = $pdo->prepare("INSERT INTO users (user_id, name, email, password, role, requires_reset) 
+                           VALUES (?, ?, ?, ?, 'Staff', 1)");
+$stmtUser->execute([$staff_id, $name, $email, $password]);
 
         // 5. INSERT SUBTYPE ENTITY (staff)
         $stmtStaff = $pdo->prepare("INSERT INTO staff (staff_id, department, phone_num) VALUES (?, ?, ?)");

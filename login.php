@@ -32,20 +32,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          * password_verify() is the industry standard. It handles the 
          * complex salt and algorithm logic (Argon2id/BCrypt) automatically.
          */
-        if ($user && password_verify($pass, $user['password'])) {
-            // Initialize Neural Session
-            $_SESSION['std_id']    = $user['user_id'];
-            $_SESSION['full_name'] = $user['name'];
-            $_SESSION['role']      = $user['role'];
-            
-            // REDIRECTION LOGIC
-            switch ($user['role']) {
-                case 'Admin': header("Location: admin_dashboard.php"); break;
-                case 'Staff': header("Location: staff_dashboard.php"); break;
-                case 'Student': header("Location: student_dashboard.php"); break;
-            }
-            exit();
-        } else {
+if ($user && password_verify($pass, $user['password'])) {
+    // Store common session data
+    $_SESSION['std_id']    = $user['user_id'];
+    $_SESSION['full_name'] = $user['name'];
+    $_SESSION['role']      = $user['role'];
+
+    // --- VISIONARY GUARD LOGIC ---
+    if ($user['requires_reset'] == 1) {
+        header("Location: force_reset.php");
+        exit();
+    }
+    
+    // Standard redirection if no reset is needed
+    switch ($user['role']) {
+        case 'Admin': header("Location: admin_dashboard.php"); break;
+        case 'Staff': header("Location: staff_dashboard.php"); break;
+        case 'Student': header("Location: student_dashboard.php"); break;
+    }
+    exit();
+}else {
             // Triggered if ID doesn't exist OR password/case is wrong
             $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your case-sensitivity or key credentials.";
         }
