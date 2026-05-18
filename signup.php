@@ -86,6 +86,12 @@ $hashed_pw = password_hash($_POST['pass'], PASSWORD_ARGON2ID);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LesBot | Neural Registration</title>
+        <!-- Paste the Google tag here -->
+    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
+
+    <!-- site identity tags -->
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>

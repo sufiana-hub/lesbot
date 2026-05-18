@@ -33,10 +33,16 @@ $staff_list = $pdo->query("SELECT s.staff_id, u.name, s.department FROM staff s 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
-    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
+
     <meta name="robots" content="index, follow">
     <title>LesBot | Assign Technician</title>
+
+        <!-- Paste the Google tag here -->
+    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
+
+    <!-- site identity tags -->
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
+
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
