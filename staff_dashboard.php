@@ -42,6 +42,7 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
     <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
     <meta name="robots" content="index, follow">
     <meta charset="utf-8">
