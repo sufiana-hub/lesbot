@@ -10,7 +10,8 @@ if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') {
 }
 
 // Fetch categories from your 'category' table for the dropdown
-$cat_stmt = $pdo->query("SELECT * FROM category");
+// 1. READ: Fetch all categories from the registry
+$cat_stmt = $pdo->query("SELECT * FROM category ORDER BY category_name ASC");
 $categories = $cat_stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -21,22 +22,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $request_id = "REQ-" . date("YmdHis"); 
 
     try {
-        // 1. AUTO-ASSIGN LOGIC: Find staff with the lowest current workload
-        $staff_stmt = $pdo->query("SELECT s.staff_id FROM staff s 
-                                   WHERE s.department = 'Maintenance' 
-                                   ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
-                                   LIMIT 1");
+        // 2. INTELLIGENT AUTO-ASSIGN: Find Staff in 'Maintenance' with the LOWEST workload
+        $staff_query = "SELECT s.staff_id FROM staff s 
+                        WHERE s.department = 'Maintenance' 
+                        ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
+                        LIMIT 1";
+        $staff_stmt = $pdo->query($staff_query);
         $assigned_staff = $staff_stmt->fetchColumn();
 
-        // 2. INSERT: If staff found, assign it. If not, set as NULL (Admin will see it).
-        $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id) 
-                VALUES (?, ?, ?, ?, ?, 'In Progress', ?)";
+        // 3. CREATE: Insert the request. Use 'In Progress' because a staff member is assigned immediately.
+        $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id, created_at) 
+                VALUES (?, ?, ?, ?, ?, 'In Progress', ?, NOW())";
         $stmt = $pdo->prepare($sql);
         
         if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
-            $success = "NEURAL LINK ESTABLISHED: Assigned to Staff ID: $assigned_staff";
+            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
         }
-    } catch (PDOException $e) { $error = "Transmission Error: " . $e->getMessage(); }
+    } catch (PDOException $e) { 
+        $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
+    }
 }
 ?>
 
@@ -153,13 +157,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form method="POST">
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
-                    <label class="input-label">ISSUE CLASSIFICATION</label>
-                    <select name="category_id" class="form-select" required>
-                        <option value="" disabled selected>Select Category...</option>
-                        <?php foreach($categories as $cat): ?>
-                            <option value="<?= $cat['category_id'] ?>"><?= strtoupper($cat['category_name']) ?> (<?= $cat['severity_level'] ?>)</option>
-                        <?php endforeach; ?>
-                    </select>
+<label class="input-label">ISSUE CLASSIFICATION</label>
+<select name="category_id" class="form-select" required>
+    <option value="" disabled selected>Select Category...</option>
+    <?php foreach($categories as $cat): ?>
+        <option value="<?= $cat['category_id'] ?>">
+            <?= strtoupper($cat['category_name']) ?> (Class: <?= $cat['severity_level'] ?>)
+        </option>
+    <?php endforeach; ?>
+</select>
                 </div>
                 <div class="col-md-6">
                     <label class="input-label">PRIORITY LEVEL</label>
