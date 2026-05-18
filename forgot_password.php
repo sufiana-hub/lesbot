@@ -81,6 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
+    <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <title>LesBot | Recover Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -110,6 +112,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     <?php include 'chatbot_component.php'; ?>
-    
+
 </body>
 </html>

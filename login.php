@@ -64,6 +64,8 @@ if ($user && password_verify($pass, $user['password'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
+    <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LesBot | Neural Login</title>

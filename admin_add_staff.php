@@ -81,6 +81,8 @@ $stmtUser->execute([$staff_id, $name, $email, $password]);
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
+    <meta name="robots" content="index, follow">
     <meta charset="utf-8">
     <title>LesBot | Staff Initialization</title>
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">

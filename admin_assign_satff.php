@@ -33,6 +33,8 @@ $staff_list = $pdo->query("SELECT s.staff_id, u.name, s.department FROM staff s 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
+    <meta name="robots" content="index, follow">
     <title>LesBot | Assign Technician</title>
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
