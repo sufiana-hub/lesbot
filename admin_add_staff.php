@@ -82,7 +82,7 @@ $stmtUser->execute([$staff_id, $name, $email, $password]);
 <html lang="en">
 <head>
 
-    <meta name="robots" content="index, follow">
+
     <meta charset="utf-8">
     <title>LesBot | Staff Initialization</title>
 

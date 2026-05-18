@@ -64,12 +64,17 @@ if ($user && password_verify($pass, $user['password'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
-    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
-    <meta name="robots" content="index, follow">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LesBot | Neural Login</title>
+
+        <!-- Paste the Google tag here -->
+    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
+
+    <!-- site identity tags -->
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
+
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     

@@ -34,7 +34,7 @@ $staff_list = $pdo->query("SELECT s.staff_id, u.name, s.department FROM staff s 
 <html lang="en">
 <head>
 
-    <meta name="robots" content="index, follow">
+ 
     <title>LesBot | Assign Technician</title>
 
         <!-- Paste the Google tag here -->

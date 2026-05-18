@@ -19,7 +19,7 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="robots" content="index, follow">
+
     <meta charset="utf-8">
     <title>LesBot | Neural Audit Trail</title>
 

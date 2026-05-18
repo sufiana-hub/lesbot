@@ -31,10 +31,14 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
-    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System Student Project">
-    <meta name="robots" content="index, follow">
+
+
     <title>LesBot | Staff Performance</title>
+        <!-- Paste the Google tag here -->
+    <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
+
+    <!-- site identity tags -->
+    <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #0B0E14; color: white; font-family: 'Rajdhani'; }
