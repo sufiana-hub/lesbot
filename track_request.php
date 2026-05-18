@@ -16,12 +16,21 @@ $id = $_SESSION['std_id'];
 
 try {
     // 2. DATA ACQUISITION
-    $sql = "SELECT mr.request_id, c.category_name, mr.description, mr.status, mr.priority, mr.created_at, u.name AS staff_name
+// 2. DATA ACQUISITION: Merging Maintenance and Staff records
+    // Added GROUP BY to prevent the duplication glitch
+    $sql = "SELECT 
+                mr.request_id, 
+                c.category_name, 
+                mr.description, 
+                mr.status, 
+                mr.priority, 
+                mr.created_at, 
+                u.name AS staff_name
             FROM maintenance_request mr
             JOIN category c ON mr.category_id = c.category_id
-            LEFT JOIN staff st ON mr.assigned_staff_id = st.staff_id
-            LEFT JOIN users u ON st.staff_id = u.user_id
+            LEFT JOIN users u ON mr.assigned_staff_id = u.user_id
             WHERE mr.student_id = :id
+            GROUP BY mr.request_id 
             ORDER BY mr.created_at DESC";
             
     $stmt = $pdo->prepare($sql);
@@ -176,10 +185,16 @@ try {
                         <div class="desc-val"><?= nl2br(htmlspecialchars($r['description'])) ?></div>
                     </div>
 
-                    <div class="col-lg-3 text-center">
+<div class="col-lg-3 text-center">
                         <?php 
                             $status = $r['status'];
-                            $bg = ($status == 'Pending') ? 'bg-warning text-dark' : 'bg-info text-dark';
+                            // DYNAMIC COLOR LOGIC
+                            $bg = 'bg-secondary'; // Default
+                            if($status == 'Pending') $bg = 'bg-warning text-dark';
+                            if($status == 'In Progress') $bg = 'bg-info text-dark';
+                            if($status == 'On Hold') $bg = 'bg-primary';
+                            if($status == 'Completed') $bg = 'bg-success';
+                            if($status == 'Rejected') $bg = 'bg-danger';
                         ?>
                         <div class="badge-status <?= $bg ?>"><?= strtoupper($status) ?></div>
                         
