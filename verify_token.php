@@ -51,6 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Link to the Robot Icon library -->
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
 
     <meta name="robots" content="index, follow">
     <meta charset="UTF-8">
@@ -107,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         border-radius: 20px;
         box-shadow: 0 15px 40px rgba(0,0,0,0.8);
     }
-    
+
     </style>
 </head>
 <body>
@@ -146,18 +148,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <!-- 4. CHATBOT COMPONENT (Ensure this file exists or remove this line to test) -->
-     <button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
+<!-- Neural AI Support Button -->
+<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
     <i class="bi bi-robot fs-3 text-dark"></i>
 </button>
 
 <?php include 'chatbot_component.php'; ?>
-
-    <?php 
-        if (file_exists('chatbot_component.php')) {
-            include 'chatbot_component.php'; 
-        }
-    ?>
-
 </body>
 </html>
