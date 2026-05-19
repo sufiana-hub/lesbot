@@ -98,6 +98,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         .btn-neural:hover { box-shadow: 0 0 20px var(--lesbot-cyan); transform: translateY(-2px); }
         .text-cyan { color: var(--lesbot-cyan); }
+
+            /* --- Chatbot Styling Refined --- */
+    .glass-card {
+        background: rgba(8, 10, 15, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    }
+    
     </style>
 </head>
 <body>
