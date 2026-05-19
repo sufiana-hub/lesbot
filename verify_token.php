@@ -1,12 +1,7 @@
 <?php
-// 1. SYSTEM INITIALIZATION
 session_start();
 require_once 'db_config.php';
 
-// Sync with Malaysia Time for the 15-minute expiry check
-date_default_timezone_set('Asia/Kuala_Lumpur');
-
-// 2. NEURAL ACCESS CONTROL: Ensure the user is in the middle of a reset
 if (!isset($_SESSION['reset_email'])) {
     header("Location: forgot_password.php");
     exit();
@@ -15,39 +10,33 @@ if (!isset($_SESSION['reset_email'])) {
 $error = ""; 
 $email = $_SESSION['reset_email'];
 
-// 3. PROCESS FORM SUBMISSION
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $token = trim($_POST['token']);
     $new_pass = $_POST['new_pass'];
     $confirm_pass = $_POST['confirm_pass'];
 
-    // Validation Logic
     if ($new_pass !== $confirm_pass) {
         $error = "NEURAL MISMATCH: Passwords do not match.";
-    } elseif (strlen($new_pass) < 6) {
-        $error = "VULNERABILITY: New key must be at least 6 characters.";
     } else {
         try {
+            date_default_timezone_set('Asia/Kuala_Lumpur');
             $now = date("Y-m-d H:i:s");
 
-            // CHECK DATABASE: Does token match and is it still valid (within 15 mins)?
+            // Check if code matches and is not expired
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND reset_token = ? AND token_expiry > ? LIMIT 1");
             $stmt->execute([$email, $token, $now]);
             $user = $stmt->fetch();
 
             if ($user) {
-                // TOKEN VALID: Update the password using the system's SHA-256 standard
-                $hashed_pass = hash('sha256', $new_pass);
+                // SUCCESS: Create high-level hash for the new password
+                $hashed_pass = password_hash($new_pass, PASSWORD_ARGON2ID);
 
-                // Clear the token and update password
-                $update = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, token_expiry = NULL WHERE email = ?");
+                // Update database and clear security flags
+                $update = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, token_expiry = NULL, requires_reset = 0 WHERE email = ?");
                 $update->execute([$hashed_pass, $email]);
 
-                // Destroy reset session for security
                 unset($_SESSION['reset_email']);
-
-                // Success Notification
-                echo "<script>alert('ACCESS RESTORED: Identity updated. Redirecting to Login.'); window.location.href='login.php';</script>";
+                echo "<script>alert('ACCESS RESTORED: Your identity has been updated with high-level encryption.'); window.location.href='login.php';</script>";
                 exit();
             } else {
                 $error = "INVALID CODE: The identity fragment is incorrect or has expired.";
