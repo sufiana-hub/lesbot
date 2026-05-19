@@ -66,6 +66,7 @@ try {
         <li><a href="admin_maintenance.php">MAINTENANCE</a></li>
         <li><a href="admin_penalties.php">PENALTIES</a></li>
         <li><a href="admin_audit_trail.php">AUDIT</a></li>
+        <li><a href="admin_trends.php">TRENDS</a></li>
     </ul>
     <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-4 font-orbitron" style="font-size: 0.6rem;">DISCONNECT</a>
 </nav>
@@ -129,6 +130,7 @@ try {
                 <div class="col-md-3"><a href="manage_accounts.php" class="btn btn-trigger">ARCHIVE DATA</a></div>
                 <div class="col-md-3"><a href="export_data.php" class="btn btn-trigger">GENERATE REPORTS</a></div>
                 <div class="col-md-3"><a href="admin_penalties.php" class="btn btn-trigger">ISSUE PENALTY</a></div>
+                <li><a href="admin_trends.php">TRENDS</a></li>
             </div>
         </div>
     </div>
