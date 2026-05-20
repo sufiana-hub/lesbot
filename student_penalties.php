@@ -1,4 +1,9 @@
 <?php
+/**
+ * LESBOT NEURAL LEDGER
+ * STUDENT PENALTY & PAYMENT INTERFACE
+ * VISION: 24/7 FINANCIAL SETTLEMENT HUB
+ */
 session_start();
 require_once 'db_config.php';
 
@@ -36,15 +41,12 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta name="robots" content="index, follow">
     <meta charset="utf-8">
     <title>LesBot | Neural Ledger</title>
 
-        <!-- Paste the Google tag here -->
+    <!-- Site Verification & Identity -->
     <meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
-
-    <!-- site identity tags -->
     <meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
 
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
@@ -69,7 +71,7 @@ try {
             min-height: 100vh;
         }
 
-        /* --- Floating Navigation (Glassmorphic) --- */
+        /* --- Floating Navigation --- */
         .neural-nav {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.8);
@@ -86,7 +88,6 @@ try {
         }
         .nav-links-container a:hover, .nav-links-container a.active { color: var(--lesbot-cyan); background: rgba(0, 212, 255, 0.1); }
 
-        /* --- System Dashboard Container --- */
         .system-container {
             background: var(--glass); border: 1px solid var(--glass-border);
             border-radius: 30px; padding: 40px; backdrop-filter: blur(10px);
@@ -99,24 +100,17 @@ try {
             font-family: 'Orbitron'; font-size: 0.8rem; color: var(--lesbot-cyan); 
             letter-spacing: 2px; margin-bottom: 20px; display: flex; align-items: center;
         }
-        .section-label i { margin-right: 10px; font-size: 1.2rem; }
-
-        /* --- Modern Data Table Styling --- */
-        .table { color: #ffffff; --bs-table-bg: transparent; --bs-table-hover-bg: rgba(0, 212, 255, 0.05); }
-        .table thead th { 
-            font-family: 'Orbitron'; font-size: 0.7rem; color: rgba(255,255,255,0.5);
-            border-bottom: 1px solid var(--glass-border); text-transform: uppercase;
-        }
-        .table tbody td { vertical-align: middle; padding: 1rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .btn-pay { 
             background: var(--lesbot-cyan); color: var(--obsidian); 
             font-family: 'Orbitron'; font-weight: 900; font-size: 0.65rem; 
             border-radius: 8px; padding: 8px 20px; transition: 0.3s; border: none;
+            text-decoration: none; display: inline-block;
         }
-        .btn-pay:hover { box-shadow: 0 0 15px var(--lesbot-cyan); transform: scale(1.05); }
+        .btn-pay:hover { box-shadow: 0 0 15px var(--lesbot-cyan); transform: scale(1.05); color: #000; }
         
         .badge-status { font-family: 'Orbitron'; font-size: 0.6rem; padding: 5px 12px; border-radius: 4px; }
+        .table { color: #fff; --bs-table-bg: transparent; }
     </style>
 </head>
 <body>
@@ -138,9 +132,10 @@ try {
         <p class="text-white-50 small" style="letter-spacing: 2px;">SECURE FINANCIAL LINK ACTIVE • SYSTEM AUDIT v3.0</p>
     </div>
 
+    <!-- 1. OUTSTANDING PENALTIES SECTION -->
     <div class="system-container shadow-lg" style="border-color: rgba(255, 77, 77, 0.3);">
         <h5 class="section-label" style="color: var(--lesbot-red);">
-            <i class="bi bi-exclamation-triangle-fill"></i> OUTSTANDING PENALTIES
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> OUTSTANDING PENALTIES
         </h5>
         <?php if (empty($outstanding)): ?>
             <div class="text-center py-4">
@@ -149,9 +144,11 @@ try {
             </div>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
-                        <tr><th>DATE ISSUED</th><th>DESCRIPTION</th><th>AMOUNT</th><th class="text-end">ACTION</th></tr>
+                        <tr class="font-orbitron small opacity-50">
+                            <th>DATE ISSUED</th><th>DESCRIPTION</th><th>AMOUNT</th><th class="text-end">ACTION</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <?php foreach($outstanding as $o): ?>
@@ -160,7 +157,8 @@ try {
                             <td class="fw-bold"><?= htmlspecialchars($o['reason']) ?></td>
                             <td class="text-danger fw-bold" style="font-family: 'Orbitron';">RM <?= number_format($o['amount'], 2) ?></td>
                             <td class="text-end">
-                                <a href="pay_penalty.php?id=<?= $o['penalty_id'] ?>" class="btn btn-pay">INITIALIZE PAYMENT</a>
+                                <!-- CORRECTED: THE PAYMENT BUTTON IS NOW INSIDE THE LOOP -->
+                                <a href="pay_penalty.php?id=<?= $o['penalty_id'] ?>" class="btn-pay">INITIALIZE PAYMENT</a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -170,17 +168,20 @@ try {
         <?php endif; ?>
     </div>
 
+    <!-- 2. TRANSACTION ARCHIVE SECTION -->
     <div class="system-container shadow-lg">
         <h5 class="section-label">
-            <i class="bi bi-clock-history"></i> TRANSACTION ARCHIVE
+            <i class="bi bi-clock-history me-2"></i> TRANSACTION ARCHIVE
         </h5>
         <?php if (empty($history)): ?>
-            <p class="text-cyan-bright small text-center">No payment history found in the neural database.</p>
+            <p class="text-white-50 small text-center py-3">No payment history found in the neural database.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
-                        <tr><th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th></tr>
+                        <tr class="font-orbitron small opacity-50">
+                            <th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <?php foreach($history as $h): ?>
@@ -204,26 +205,7 @@ try {
     </div>
 </div>
 
-<div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan);">
-    <div class="card-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
-        <span style="font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); letter-spacing: 2px;">LESBOT 24/7 HELPFLOW</span>
-        <button onclick="toggleLesBot()" class="btn-close btn-close-white" style="font-size: 0.6rem;"></button>
-    </div>
-    <div id="chat-body" class="p-3" style="height: 350px; overflow-y: auto; font-family: 'Rajdhani';">
-        <div class="mb-3"><small class="text-info">LesBot:</small><br>Identity verified. How can I assist you tonight?</div>
-    </div>
-    <div class="p-3 border-top border-secondary">
-        <div class="input-group">
-            <input type="text" id="user-msg" class="form-control bg-dark text-white border-secondary small" placeholder="Ask anything...">
-            <button class="btn btn-outline-info" onclick="sendNeuralMessage()"><i class="bi bi-send"></i></button>
-        </div>
-    </div>
-</div>
-
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
-
+<!-- Integrated AI Chatbot Interface -->
 <?php include 'chatbot_component.php'; ?>
 
 </body>
