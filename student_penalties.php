@@ -41,8 +41,9 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="robots" content="index, follow">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
     <title>LesBot | Neural Ledger</title>
 
     <!-- Site Verification & Identity -->
@@ -52,18 +53,18 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
         :root { 
             --lesbot-cyan: #00d4ff; 
             --lesbot-red: #ff4d4d;
             --obsidian: #080a0f; 
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(0, 212, 255, 0.2);
+            --neon-border: rgba(0, 212, 255, 0.3);
         }
 
         body { 
             background-color: var(--obsidian); 
-            background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.07) 0%, transparent 80%);
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 80%);
             color: #ffffff; 
             font-family: 'Rajdhani', sans-serif; 
             margin: 0;
@@ -74,43 +75,58 @@ try {
         /* --- Floating Navigation --- */
         .neural-nav {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.8);
-            backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
-            border-radius: 50px; padding: 10px 30px; display: flex;
+            width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.9);
+            backdrop-filter: blur(15px); border: 1px solid var(--neon-border);
+            border-radius: 50px; padding: 12px 35px; display: flex;
             justify-content: space-between; align-items: center; z-index: 1000;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .nav-brand { font-family: 'Orbitron'; font-weight: 900; color: var(--lesbot-cyan); text-decoration: none; }
         .nav-links-container { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
         .nav-links-container a { 
-            color: rgba(255, 255, 255, 0.7); text-decoration: none; font-family: 'Orbitron'; 
-            font-size: 0.7rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 20px; transition: 0.3s;
+            color: rgba(255, 255, 255, 0.6); text-decoration: none; font-family: 'Orbitron'; 
+            font-size: 0.7rem; letter-spacing: 1px; transition: 0.3s;
         }
-        .nav-links-container a:hover, .nav-links-container a.active { color: var(--lesbot-cyan); background: rgba(0, 212, 255, 0.1); }
+        .nav-links-container a:hover, .nav-links-container a.active { color: var(--lesbot-cyan); text-shadow: 0 0 10px var(--lesbot-cyan); }
 
+        /* --- Main UI Container --- */
         .system-container {
-            background: var(--glass); border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--neon-border);
             border-radius: 30px; padding: 40px; backdrop-filter: blur(10px);
-            margin-bottom: 30px;
+            margin-bottom: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .header-title { font-family: 'Orbitron'; font-weight: 900; letter-spacing: 3px; color: var(--lesbot-cyan); }
+        .header-title { font-family: 'Orbitron'; font-weight: 900; letter-spacing: 5px; color: var(--lesbot-cyan); }
         
-        .section-label { 
-            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--lesbot-cyan); 
-            letter-spacing: 2px; margin-bottom: 20px; display: flex; align-items: center;
+        /* --- High Contrast Table Styling --- */
+        .custom-table { width: 100%; color: #ffffff; border-collapse: collapse; }
+        .custom-table thead th { 
+            font-family: 'Orbitron'; font-size: 0.85rem; color: var(--lesbot-cyan); 
+            text-transform: uppercase; letter-spacing: 2px; padding: 15px;
+            border-bottom: 2px solid var(--lesbot-cyan);
         }
+        .custom-table tbody td { 
+            padding: 20px 15px; font-size: 1rem; font-weight: 500;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* BRIGHT TEXT FOR DATA */
+        .data-text-primary { color: #ffffff; font-weight: 600; }
+        .data-text-glow { color: var(--lesbot-cyan); font-family: 'Orbitron'; font-weight: 900; text-shadow: 0 0 8px rgba(0, 212, 255, 0.4); }
 
         .btn-pay { 
-            background: var(--lesbot-cyan); color: var(--obsidian); 
-            font-family: 'Orbitron'; font-weight: 900; font-size: 0.65rem; 
-            border-radius: 8px; padding: 8px 20px; transition: 0.3s; border: none;
+            background: var(--lesbot-cyan); color: #000; 
+            font-family: 'Orbitron'; font-weight: 900; font-size: 0.7rem; 
+            border-radius: 8px; padding: 10px 20px; transition: 0.3s; border: none;
             text-decoration: none; display: inline-block;
         }
-        .btn-pay:hover { box-shadow: 0 0 15px var(--lesbot-cyan); transform: scale(1.05); color: #000; }
+        .btn-pay:hover { box-shadow: 0 0 20px var(--lesbot-cyan); transform: scale(1.05); color: #000; }
         
-        .badge-status { font-family: 'Orbitron'; font-size: 0.6rem; padding: 5px 12px; border-radius: 4px; }
-        .table { color: #fff; --bs-table-bg: transparent; }
+        .badge-status { 
+            font-family: 'Orbitron'; font-size: 0.7rem; padding: 8px 16px; 
+            border-radius: 6px; border: 1px solid #2ecc71; color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -123,7 +139,7 @@ try {
         <li><a href="student_penalties.php" class="active">PENALTIES</a></li>
         <li><a href="student_history.php">HISTORY</a></li>
     </ul>
-    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" style="font-family: 'Orbitron'; font-size: 0.6rem;">DISCONNECT</a>
+    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-4 fw-bold font-orbitron" style="font-size: 0.6rem;">DISCONNECT</a>
 </nav>
 
 <div class="container mt-4 mb-5">
@@ -133,31 +149,28 @@ try {
     </div>
 
     <!-- 1. OUTSTANDING PENALTIES SECTION -->
-    <div class="system-container shadow-lg" style="border-color: rgba(255, 77, 77, 0.3);">
-        <h5 class="section-label" style="color: var(--lesbot-red);">
+    <div class="system-container shadow-lg" style="border-left: 5px solid var(--lesbot-red);">
+        <h5 class="mb-4 font-orbitron" style="color: var(--lesbot-red); font-size: 0.9rem;">
             <i class="bi bi-exclamation-triangle-fill me-2"></i> OUTSTANDING PENALTIES
         </h5>
         <?php if (empty($outstanding)): ?>
             <div class="text-center py-4">
                 <i class="bi bi-shield-check text-success fs-1 mb-2"></i>
-                <p class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 1px;">LEDGER CLEAR: NO DEBT DETECTED</p>
+                <p class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.8rem; letter-spacing: 1px;">LEDGER CLEAR: NO DEBT DETECTED</p>
             </div>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="custom-table">
                     <thead>
-                        <tr class="font-orbitron small opacity-50">
-                            <th>DATE ISSUED</th><th>DESCRIPTION</th><th>AMOUNT</th><th class="text-end">ACTION</th>
-                        </tr>
+                        <tr><th>DATE ISSUED</th><th>DESCRIPTION</th><th>AMOUNT</th><th class="text-end">ACTION</th></tr>
                     </thead>
                     <tbody>
                         <?php foreach($outstanding as $o): ?>
                         <tr>
-                            <td class="small text-white-50"><?= date('d/m/Y', strtotime($o['date_issued'])) ?></td>
-                            <td class="fw-bold"><?= htmlspecialchars($o['reason']) ?></td>
-                            <td class="text-danger fw-bold" style="font-family: 'Orbitron';">RM <?= number_format($o['amount'], 2) ?></td>
+                            <td class="data-text-primary"><?= date('d/m/Y', strtotime($o['date_issued'])) ?></td>
+                            <td class="data-text-primary"><?= strtoupper(htmlspecialchars($o['reason'])) ?></td>
+                            <td class="data-text-glow">RM <?= number_format($o['amount'], 2) ?></td>
                             <td class="text-end">
-                                <!-- CORRECTED: THE PAYMENT BUTTON IS NOW INSIDE THE LOOP -->
                                 <a href="pay_penalty.php?id=<?= $o['penalty_id'] ?>" class="btn-pay">INITIALIZE PAYMENT</a>
                             </td>
                         </tr>
@@ -169,27 +182,25 @@ try {
     </div>
 
     <!-- 2. TRANSACTION ARCHIVE SECTION -->
-    <div class="system-container shadow-lg">
-        <h5 class="section-label">
+    <div class="system-container shadow-lg" style="border-left: 5px solid var(--lesbot-cyan);">
+        <h5 class="mb-4 font-orbitron" style="color: var(--lesbot-cyan); font-size: 0.9rem;">
             <i class="bi bi-clock-history me-2"></i> TRANSACTION ARCHIVE
         </h5>
         <?php if (empty($history)): ?>
             <p class="text-white-50 small text-center py-3">No payment history found in the neural database.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="custom-table">
                     <thead>
-                        <tr class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;"></class=>
-                            <th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th>
-                        </tr>
+                        <tr><th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th></tr>
                     </thead>
                     <tbody>
                         <?php foreach($history as $h): ?>
                         <tr>
-                            <td class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;"><?= date('d/m/Y', strtotime($h['date_issued'])) ?></td>
-                            <td><?= htmlspecialchars($h['reason']) ?></td>
-                            <td class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;">RM <?= number_format($h['amount'], 2) ?></td>
-                            <td><span class="badge-status bg-success">SETTLED</span></td>
+                            <td class="data-text-primary"><?= date('d/m/Y', strtotime($h['date_issued'])) ?></td>
+                            <td class="data-text-primary"><?= strtoupper(htmlspecialchars($h['reason'])) ?></td>
+                            <td class="data-text-glow">RM <?= number_format($h['amount'], 2) ?></td>
+                            <td><span class="badge-status">SETTLED</span></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -199,13 +210,13 @@ try {
     </div>
 
     <div class="text-center mt-5">
-        <a href="student_dashboard.php" class="btn btn-outline-info px-5 py-3 rounded-pill fw-bold" style="font-family: 'Orbitron'; font-size: 0.75rem; letter-spacing: 2px;">
+        <a href="student_dashboard.php" class="btn btn-outline-info px-5 py-3 rounded-pill fw-bold font-orbitron" style="font-size: 0.75rem; letter-spacing: 2px;">
             <i class="bi bi-arrow-left me-2"></i> RETURN TO HUB
         </a>
     </div>
 </div>
 
-<!-- Integrated AI Chatbot Interface -->
+<!-- AI Component Include -->
 <?php include 'chatbot_component.php'; ?>
 
 </body>
