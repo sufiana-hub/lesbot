@@ -179,16 +179,16 @@ try {
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
-                        <tr class="font-orbitron small opacity-50">
+                        <tr class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;"></class=>
                             <th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach($history as $h): ?>
                         <tr>
-                            <td class="small text-white-50"><?= date('d/m/Y', strtotime($h['date_issued'])) ?></td>
+                            <td class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;"><?= date('d/m/Y', strtotime($h['date_issued'])) ?></td>
                             <td><?= htmlspecialchars($h['reason']) ?></td>
-                            <td class="fw-bold" style="font-family: 'Orbitron';">RM <?= number_format($h['amount'], 2) ?></td>
+                            <td class="text-success fw-bold m-0" style="font-family: 'Orbitron'; font-size: 0.4rem; letter-spacing: 1px;">RM <?= number_format($h['amount'], 2) ?></td>
                             <td><span class="badge-status bg-success">SETTLED</span></td>
                         </tr>
                         <?php endforeach; ?>
