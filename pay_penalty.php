@@ -1,14 +1,10 @@
 <?php
-/**
- * LESBOT NEURAL GATEWAY
- * INITIALIZING FPX HANDSHAKE VIA TOYYIBPAY API
- */
 session_start();
 require_once 'db_config.php';
 
 $penalty_id = $_GET['id'];
 
-// 1. Fetch penalty details for the bill
+// 1. Fetch data
 $stmt = $pdo->prepare("SELECT sp.amount, u.name, u.email, pt.description 
                        FROM student_penalties sp 
                        JOIN users u ON sp.matric_number = u.user_id 
@@ -17,45 +13,52 @@ $stmt = $pdo->prepare("SELECT sp.amount, u.name, u.email, pt.description
 $stmt->execute([$penalty_id]);
 $data = $stmt->fetch();
 
-if (!$data) { die("UNAUTHORIZED: Invalid Penalty ID."); }
+if (!$data) { die("Ledger Record Not Found."); }
 
-// 2. Prepare API Payload
+// 2. Setup API - CHECK IF YOU ARE USING SANDBOX OR REAL
+// If your ToyyibPay dashboard says "Sandbox", use 'dev.toyyibpay.com'
+// If it is a real active account, use 'toyyibpay.com'
+$baseUrl = 'dev.toyyibpay.com'; 
+
 $post_data = array(
     'userSecretKey' => getenv('TOYYIB_SECRET'),
     'categoryCode'  => getenv('TOYYIB_CAT'),
     'billName'      => 'LesBot Penalty Settlement',
-    'billDescription' => 'Ref: ' . $penalty_id . ' | ' . $data['description'],
+    'billDescription' => $data['description'],
     'billPriceSetting' => 1,
     'billPayorInfo' => 1,
-    'billAmount'    => $data['amount'] * 100, // API uses cents
+    'billAmount'    => $data['amount'] * 100, 
     'billReturnUrl' => 'https://lesbot-lestari-bmdahbahbbeeb2f9.southeastasia-01.azurewebsites.net/view_receipt.php',
     'billCallbackUrl' => 'https://lesbot-lestari-bmdahbahbbeeb2f9.southeastasia-01.azurewebsites.net/callback.php',
     'billExternalReferenceNo' => $penalty_id,
     'billTo'        => $data['name'],
     'billEmail'     => $data['email'],
-    'billPhone'     => '01123456789',
-    'billPaymentChannel' => '0', // 0 = FPX (All Banks across Malaysia)
+    'billPhone'     => '0112345678',
+    'billPaymentChannel' => '0', 
 );  
 
-// 3. Request Secure Bill from ToyyibPay
-$url = 'https://toyyibpay.com/index.php/api/createBill';
-$ch = curl_init($url);
+// 3. The Handshake
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://$baseUrl/index.php/api/createBill");
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data)); // Use http_build_query
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Crucial for Azure/XAMPP handshake
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
 
 $response = curl_exec($ch);
-
+curl_close($ch);
 
 $result = json_decode($response, true);
 
+// 4. LOGIC CHECK
 if (isset($result[0]['BillCode'])) {
-    // 4. REDIRECT: Send the student to the REAL Bank Hub
-    $bill_url = "https://toyyibpay.com/" . $result[0]['BillCode'];
-    header("Location: " . $bill_url);
+    $bill_code = $result[0]['BillCode'];
+    header("Location: https://$baseUrl/" . $bill_code);
     exit();
 } else {
-    // Debug info for you if it fails
-    die("Neural Link Error: " . ($result['msg'] ?? 'Hub connection failed. Check Azure Secrets.'));
+    // If it fails, show the real reason from ToyyibPay
+    echo "<h3>NEURAL DIAGNOSTIC FAILURE</h3>";
+    echo "Response from Hub: " . $response;
+    echo "<br><br>Check your Azure Environment Variables (TOYYIB_SECRET & TOYYIB_CAT)";
+    exit();
 }
