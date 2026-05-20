@@ -24,10 +24,11 @@ try {
     $unpaid_stmt->execute([$id]);
     $outstanding = $unpaid_stmt->fetchAll();
 
-    // 3. READ: Fetch Paid Penalties (History)
-    $paid_stmt = $pdo->prepare("SELECT sp.*, pt.description as reason 
+// 3. READ: Fetch Paid Penalties with their Payment ID for Receipt Generation
+    $paid_stmt = $pdo->prepare("SELECT sp.*, pt.description as reason, py.payment_id 
                                 FROM student_penalties sp 
                                 JOIN penalty_types pt ON sp.penalty_type_id = pt.penalty_type_id 
+                                LEFT JOIN student_payments py ON sp.penalty_id = py.penalty_id
                                 WHERE sp.matric_number = ? AND sp.is_paid = 1 
                                 ORDER BY sp.date_issued DESC");
     $paid_stmt->execute([$id]);
@@ -127,6 +128,20 @@ try {
             border-radius: 6px; border: 1px solid #2ecc71; color: #2ecc71;
             background: rgba(46, 204, 113, 0.1);
         }
+
+        .btn-receipt { 
+            background: transparent; color: var(--lesbot-cyan); 
+            border: 1px solid var(--lesbot-cyan); 
+            font-family: 'Orbitron'; font-size: 0.6rem; 
+            padding: 8px 15px; border-radius: 6px; 
+            text-decoration: none; transition: 0.3s;
+            display: inline-flex; align-items: center;
+        }
+        .btn-receipt:hover { 
+            background: var(--lesbot-cyan); color: #000; 
+            box-shadow: 0 0 15px var(--lesbot-cyan); 
+        }
+
     </style>
 </head>
 <body>
@@ -181,7 +196,7 @@ try {
         <?php endif; ?>
     </div>
 
-    <!-- 2. TRANSACTION ARCHIVE SECTION -->
+<!-- 2. TRANSACTION ARCHIVE SECTION -->
     <div class="system-container shadow-lg" style="border-left: 5px solid var(--lesbot-cyan);">
         <h5 class="mb-4 font-orbitron" style="color: var(--lesbot-cyan); font-size: 0.9rem;">
             <i class="bi bi-clock-history me-2"></i> TRANSACTION ARCHIVE
@@ -192,7 +207,13 @@ try {
             <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
-                        <tr><th>DATE</th><th>DESCRIPTION</th><th>SETTLEMENT</th><th>STATUS</th></tr>
+                        <tr>
+                            <th>DATE</th>
+                            <th>DESCRIPTION</th>
+                            <th>SETTLEMENT</th>
+                            <th>STATUS</th>
+                            <th class="text-end">ACTION</th> <!-- NEW COLUMN -->
+                        </tr>
                     </thead>
                     <tbody>
                         <?php foreach($history as $h): ?>
@@ -201,6 +222,16 @@ try {
                             <td class="data-text-primary"><?= strtoupper(htmlspecialchars($h['reason'])) ?></td>
                             <td class="data-text-glow">RM <?= number_format($h['amount'], 2) ?></td>
                             <td><span class="badge-status">SETTLED</span></td>
+                            <td class="text-end">
+                                <?php if($h['payment_id']): ?>
+                                    <!-- LINK TO THE RECEIPT PAGE -->
+                                    <a href="view_receipt.php?id=<?= $h['payment_id'] ?>" class="btn-receipt">
+                                        <i class="bi bi-file-earmark-arrow-down me-2"></i> RECEIPT
+                                    </a>
+                                <?php else: ?>
+                                    <span class="small text-white-50 italic">LEGACY_RECORD</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
