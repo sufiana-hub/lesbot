@@ -154,7 +154,7 @@ try {
                 <div class="col-sm-8 data-value text-lowercase" style="font-family: 'Rajdhani';"><?= htmlspecialchars($student['email']) ?></div>
             </div>
             <div class="row mb-3 border-bottom border-secondary pb-2 align-items-center">
-                <div class="col-sm-4 info-label">CURRENT Bilik</div>
+                <div class="col-sm-4 info-label">CURRENT ROOM</div>
                 <div class="col-sm-8 data-value">
                     <?= htmlspecialchars($current_room) ?> - 
                     <span class="text-info fw-bold" style="font-size: 0.8rem;"><?= strtoupper($wing) ?></span>
@@ -169,7 +169,7 @@ try {
 
             <div class="mt-4 p-3 bg-dark bg-opacity-50 rounded-3 border border-secondary">
                 <h6 class="info-label text-info mb-3" style="font-size: 0.65rem;">
-                    <i class="bi bi-clock-history me-2"></i> SEMESTER Bilik HISTORY
+                    <i class="bi bi-clock-history me-2"></i> LAST SEMESTER ROOM HISTORY
                 </h6>
                 <div class="table-responsive">
                     <table class="table table-sm table-dark table-hover mb-0" style="font-size: 0.8rem; --bs-table-bg: transparent;">
