@@ -3,9 +3,8 @@ session_start();
 require_once 'db_config.php';
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
-// 1. NEURAL ACCESS CONTROL: Only Students allowed
-// 1. NEURAL ACCESS CONTROL: Only Students allowed
-// AUDIT BYPASS: Allows Postman to test the logic using a secret key
+// --- 1. NEURAL ACCESS CONTROL (WITH AUDIT BYPASS) ---
+// This allows Postman to bypass the login requirement using a secret key
 $is_audit = (isset($_POST['audit_key']) && $_POST['audit_key'] === 'LESBOT_INTERNAL_AUDIT_2026');
 
 if (!$is_audit) {
@@ -15,23 +14,21 @@ if (!$is_audit) {
     }
 }
 
-// Identify the reporter (Use session ID or Audit ID)
-$student_id = $is_audit ? 'AUDIT_ENTITY_01' : $_SESSION['std_id'];
+// Assign student ID (Real session or Audit entity)
+$student_id = $is_audit ? 'B032410816' : $_SESSION['std_id'];
 
-// Fetch categories from your 'category' table for the dropdown
-// 1. READ: Fetch all categories from the registry
+// --- 2. DATA ACQUISITION ---
 $cat_stmt = $pdo->query("SELECT * FROM category ORDER BY category_name ASC");
 $categories = $cat_stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $student_id = $_SESSION['std_id'];
     $category_id = $_POST['category_id']; 
     $priority = $_POST['priority'];
     $description = trim($_POST['description']);
     $request_id = "REQ-" . date("YmdHis"); 
 
     try {
-        // 2. INTELLIGENT AUTO-ASSIGN: Find Staff in 'Maintenance' with the LOWEST workload
+        // Find staff in 'Maintenance' with the lowest workload
         $staff_query = "SELECT s.staff_id FROM staff s 
                         WHERE s.department = 'Maintenance' 
                         ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
@@ -39,22 +36,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $staff_stmt = $pdo->query($staff_query);
         $assigned_staff = $staff_stmt->fetchColumn();
 
-        // 3. CREATE: Insert the request. Use 'In Progress' because a staff member is assigned immediately.
+        // INSERT INTO DATABASE
         $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id, created_at) 
                 VALUES (?, ?, ?, ?, ?, 'In Progress', ?, NOW())";
         $stmt = $pdo->prepare($sql);
         
-if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
-            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
-
-            // --- ADD THIS BLOCK FOR POSTMAN PASS ---
+        if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
+            
+            // --- SUCCESS LOGIC FOR POSTMAN AUDIT ---
             if (isset($_POST['audit_mode'])) { 
                 echo "NEURAL LINK ESTABLISHED"; 
                 exit(); 
             }
-            // ----------------------------------------
+            
+            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
         }
-
     } catch (PDOException $e) { 
         $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
     }
@@ -125,7 +121,7 @@ if ($stmt->execute([$request_id, $student_id, $category_id, $description, $prior
             font-family: 'Rajdhani'; transition: 0.3s;
         }
         .form-control:focus, .form-select:focus {
-            background: rgba(0,0,0,0.6); border-color: var(--lesbot-cyan);
+            background: rgba(0,0,0,0.5); border-color: var(--lesbot-cyan);
             color: white; box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
         }
 
@@ -220,26 +216,6 @@ if ($stmt->execute([$request_id, $student_id, $category_id, $description, $prior
         </form>
     </div>
 </div>
-
-<div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 30px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan);">
-    <div class="card-header d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
-        <span style="font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); letter-spacing: 2px;">LESBOT 24/7 HELPFLOW</span>
-        <button onclick="toggleLesBot()" class="btn-close btn-close-white" style="font-size: 0.6rem;"></button>
-    </div>
-    <div id="chat-body" class="p-3" style="height: 350px; overflow-y: auto; font-family: 'Rajdhani';">
-        <div class="mb-3"><small class="text-info">LesBot:</small><br>Identity verified. How can I assist you tonight?</div>
-    </div>
-    <div class="p-3 border-top border-secondary">
-        <div class="input-group">
-            <input type="text" id="user-msg" class="form-control bg-dark text-white border-secondary small" placeholder="Ask anything...">
-            <button class="btn btn-outline-info" onclick="sendNeuralMessage()"><i class="bi bi-send"></i></button>
-        </div>
-    </div>
-</div>
-
-<button onclick="toggleLesBot()" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50%; width: 60px; height: 60px; background: var(--lesbot-cyan); border: none; box-shadow: 0 0 20px var(--lesbot-cyan); z-index: 9998;">
-    <i class="bi bi-robot fs-3 text-dark"></i>
-</button>
 
 <?php include 'chatbot_component.php'; ?>
 
