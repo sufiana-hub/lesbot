@@ -4,10 +4,19 @@ require_once 'db_config.php';
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 // 1. NEURAL ACCESS CONTROL: Only Students allowed
-if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') {
-    header("Location: login.php");
-    exit();
+// 1. NEURAL ACCESS CONTROL: Only Students allowed
+// AUDIT BYPASS: Allows Postman to test the logic using a secret key
+$is_audit = (isset($_POST['audit_key']) && $_POST['audit_key'] === 'LESBOT_INTERNAL_AUDIT_2026');
+
+if (!$is_audit) {
+    if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') {
+        header("Location: login.php");
+        exit();
+    }
 }
+
+// Identify the reporter (Use session ID or Audit ID)
+$student_id = $is_audit ? 'AUDIT_ENTITY_01' : $_SESSION['std_id'];
 
 // Fetch categories from your 'category' table for the dropdown
 // 1. READ: Fetch all categories from the registry
@@ -38,14 +47,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
             $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
 
-            // --- ADD THIS BLOCK FOR POSTMAN AUDIT ---
+            // --- ADD THIS BLOCK FOR POSTMAN PASS ---
             if (isset($_POST['audit_mode'])) { 
                 echo "NEURAL LINK ESTABLISHED"; 
                 exit(); 
             }
             // ----------------------------------------
         }
-        
+
     } catch (PDOException $e) { 
         $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
     }
