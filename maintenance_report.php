@@ -35,9 +35,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES (?, ?, ?, ?, ?, 'In Progress', ?, NOW())";
         $stmt = $pdo->prepare($sql);
         
-        if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
+if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
             $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
+
+            // --- ADD THIS BLOCK FOR POSTMAN AUDIT ---
+            if (isset($_POST['audit_mode'])) { 
+                echo "NEURAL LINK ESTABLISHED"; 
+                exit(); 
+            }
+            // ----------------------------------------
         }
+        
     } catch (PDOException $e) { 
         $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
     }
