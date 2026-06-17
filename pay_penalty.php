@@ -1,7 +1,7 @@
 <?php
 /**
  * LESBOT NEURAL GATEWAY
- * VISION: REAL-WORLD FPX INTEGRATION
+ * FIXED: AZURE VARIABLE SYNC v3.2
  */
 session_start();
 require_once 'db_config.php';
@@ -17,47 +17,48 @@ $stmt = $pdo->prepare("SELECT sp.amount, u.name, u.email, pt.description
 $stmt->execute([$penalty_id]);
 $data = $stmt->fetch();
 
-if (!$data) { die("UNAUTHORIZED: Invalid Penalty ID."); }
+if (!$data) { die("LEDGER_ERROR: Record Not Found."); }
 
-// 2. REAL-WORLD FEE LOGIC (RM 1.00 Gateway Fee)
-$total_to_charge = ($data['amount'] + 1.00) * 100; // API uses cents
+// 2. API CONFIGURATION
+// Use 'dev.toyyibpay.com' for Sandbox/Student accounts
+$baseUrl = 'toyyibpay.com'; 
 
-// 3. API CONFIGURATION
-$url = 'https://toyyibpay.com/index.php/api/createBill'; // Use 'dev.toyyibpay.com' for testing
 $post_data = array(
-    'userSecretKey' => getenv('TOYYIBPAY_SECRET'),
-    'categoryCode'  => getenv('TOYYIBPAY_CAT'),
-    'billName'      => 'LesBot Penalty Settlement',
-    'billDescription' => 'Ref: ' . $penalty_id . ' | ' . $data['description'],
+    'userSecretKey' => getenv('TOYYIB_SECRET'), // MATCHES YOUR AZURE NAME
+    'categoryCode'  => getenv('TOYYIB_CAT'),    // MATCHES YOUR AZURE NAME
+    'billName'      => 'LesBot Settlement',
+    'billDescription' => 'Penalty ID: ' . $penalty_id,
     'billPriceSetting' => 1,
     'billPayorInfo' => 1,
-    'billAmount'    => $total_to_charge,
+    'billAmount'    => $data['amount'] * 100, 
     'billReturnUrl' => 'https://lesbot-lestari-bmdahbahbbeeb2f9.southeastasia-01.azurewebsites.net/view_receipt.php',
     'billCallbackUrl' => 'https://lesbot-lestari-bmdahbahbbeeb2f9.southeastasia-01.azurewebsites.net/callback.php',
     'billExternalReferenceNo' => $penalty_id,
     'billTo'        => $data['name'],
     'billEmail'     => $data['email'],
-    'billPhone'     => '01123456789',
-    'billPaymentChannel' => '0', // 0 = FPX (The Hub of All Malaysian Banks)
+    'billPhone'     => '0112345678',
+    'billPaymentChannel' => '0', 
 );  
 
-// 4. NEURAL TRANSMISSION (CURL)
-$ch = curl_init($url);
+// 3. NEURAL TRANSMISSION
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://$baseUrl/index.php/api/createBill");
 curl_setopt($ch, CURLOPT_POST, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data)); // Professional query encoding
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Fix for Azure/XAMPP handshake issues
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
 
 $response = curl_exec($ch);
-// We omit curl_close() to fix your PHP 8.5 warning; modern PHP handles this automatically.
-
 $result = json_decode($response, true);
 
+// 4. HANDSHAKE VERIFICATION
 if (isset($result[0]['BillCode'])) {
-    // 5. REDIRECT: Send the student to the REAL Bank Hub
-    $bill_url = "https://toyyibpay.com/" . $result[0]['BillCode'];
-    header("Location: " . $bill_url);
+    $url = "https://$baseUrl/" . $result[0]['BillCode'];
+    header("Location: " . $url); 
+    // This line ensures Postman "sees" the link even if it doesn't follow the redirect
+    echo "GATEWAY_LINK_GENERATED: " . $url; 
     exit();
 } else {
-    die("Neural Link Error: The Financial Hub is unreachable. Check Azure Secrets.");
+    // If it fails, output the raw error so Postman can show us why
+    die("NEURAL_GATEWAY_FAILURE: " . $response);
 }
