@@ -21,7 +21,7 @@ if (!$data) { die("LEDGER_ERROR: Record Not Found."); }
 
 // 2. API CONFIGURATION
 // Use 'dev.toyyibpay.com' for Sandbox/Student accounts
-$baseUrl = 'toyyibpay.com'; 
+$baseUrl = 'dev.toyyibpay.com'; 
 
 $post_data = array(
     'userSecretKey' => getenv('TOYYIB_SECRET'), // MATCHES YOUR AZURE NAME
