@@ -3,55 +3,55 @@ session_start();
 require_once 'db_config.php';
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
-// --- 1. NEURAL ACCESS CONTROL (WITH AUDIT BYPASS) ---
-// This allows Postman to bypass the login requirement using a secret key
-$is_audit = (isset($_POST['audit_key']) && $_POST['audit_key'] === 'LESBOT_INTERNAL_AUDIT_2026');
+/**
+ * 1. NEURAL AUDIT BYPASS 
+ * This must be at the VERY top to catch Postman before it redirects.
+ */
+$is_audit_mode = (isset($_POST['audit_key']) && $_POST['audit_key'] === 'LESBOT_INTERNAL_AUDIT_2026');
 
-if (!$is_audit) {
+if (!$is_audit_mode) {
     if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') {
         header("Location: login.php");
         exit();
     }
 }
 
-// Assign student ID (Real session or Audit entity)
-$student_id = $is_audit ? 'B032410816' : $_SESSION['std_id'];
+// Set the identifier for the database record
+$student_id = $is_audit_mode ? 'B032410816' : $_SESSION['std_id'];
 
-// --- 2. DATA ACQUISITION ---
+// 2. DATA ACQUISITION
 $cat_stmt = $pdo->query("SELECT * FROM category ORDER BY category_name ASC");
 $categories = $cat_stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $category_id = $_POST['category_id']; 
-    $priority = $_POST['priority'];
-    $description = trim($_POST['description']);
+    $category_id = $_POST['category_id'] ?? 1; 
+    $priority = $_POST['priority'] ?? 'Medium';
+    $description = trim($_POST['description'] ?? 'Audit Test');
     $request_id = "REQ-" . date("YmdHis"); 
 
     try {
-        // Find staff in 'Maintenance' with the lowest workload
-        $staff_query = "SELECT s.staff_id FROM staff s 
-                        WHERE s.department = 'Maintenance' 
-                        ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
-                        LIMIT 1";
-        $staff_stmt = $pdo->query($staff_query);
-        $assigned_staff = $staff_stmt->fetchColumn();
+        // Auto-assign logic
+        $staff_query = "SELECT s.staff_id FROM staff s WHERE s.department = 'Maintenance' ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC LIMIT 1";
+        $assigned_staff = $pdo->query($staff_query)->fetchColumn();
 
-        // INSERT INTO DATABASE
+        // 3. DATABASE INSERT
         $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id, created_at) 
                 VALUES (?, ?, ?, ?, ?, 'In Progress', ?, NOW())";
         $stmt = $pdo->prepare($sql);
         
         if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff])) {
             
-            // --- SUCCESS LOGIC FOR POSTMAN AUDIT ---
-            if (isset($_POST['audit_mode'])) { 
-                echo "NEURAL LINK ESTABLISHED"; 
-                exit(); 
+            // --- IF POSTMAN IS CALLING, STOP HERE AND SEND THE PASS STRING ---
+            if (isset($_POST['audit_mode'])) {
+                header('Content-Type: text/plain');
+                echo "NEURAL LINK ESTABLISHED";
+                exit();
             }
             
-            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned to Technician ID: $assigned_staff";
+            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned.";
         }
     } catch (PDOException $e) { 
+        if (isset($_POST['audit_mode'])) { echo "DB ERROR: " . $e->getMessage(); exit(); }
         $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
     }
 }
