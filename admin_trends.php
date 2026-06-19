@@ -55,7 +55,6 @@ try {
 
 } catch (PDOException $e) { die("DW Engine Error: " . $e->getMessage()); }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,7 +75,6 @@ try {
     </style>
 </head>
 <body>
-
 <nav class="neural-nav">
     <a href="admin_dashboard.php" style="color:var(--lesbot-cyan); font-family:'Orbitron'; font-weight:900; text-decoration:none;">LESBOT BI •</a>
     <div style="display:flex; gap:20px;">
@@ -84,22 +82,21 @@ try {
         <a href="admin_trends.php" style="color:var(--lesbot-cyan); text-decoration:none; font-size:0.7rem; font-family:'Orbitron'; font-weight:900;">BI_FORENSICS</a>
     </div>
 </nav>
-
 <div class="container-fluid px-5">
     <div class="bi-grid">
-        
-        <!-- 1. AI STRATEGIC FORENSICS -->
+
+        <!-- 1. MAINTENANCE LINE TREND (Moved to Left) -->
+        <div class="bi-card" style="grid-column: span 2;">
+            <p class="stat-label">System Load (7D Maintenance Trend)</p>
+            <canvas id="lineChart" style="max-height: 150px;"></canvas>
+        </div>
+
+        <!-- 2. AI STRATEGIC FORENSICS (Moved to Right) -->
         <div class="bi-card ai-forensic-card">
             <p class="stat-label text-danger"><i class="bi bi-shield-exclamation me-2"></i>Neural Forensic Report</p>
             <div class="small" style="line-height: 1.6; color: #ffcccc;">
                 <?= nl2br($ai_insights) ?>
             </div>
-        </div>
-
-        <!-- 2. MAINTENANCE LINE TREND -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label">System Load (7D Maintenance Trend)</p>
-            <canvas id="lineChart" style="max-height: 150px;"></canvas>
         </div>
 
         <!-- 3. STAFF PERFORMANCE FORENSICS -->
@@ -141,20 +138,19 @@ try {
         </div>
 
         <!-- 5. CATEGORY DISTRIBUTION (PIE) -->
-        <div class="bi-card">
+        <div class="bi-card" style="grid-column: span 2;">
             <p class="stat-label text-center">Category Hotspots</p>
-            <canvas id="maintChart"></canvas>
+            <canvas id="maintChart" style="max-height: 250px;"></canvas>
         </div>
 
         <!-- 6. FINANCIAL SETTLEMENT (DOUGHNUT) -->
-        <div class="bi-card">
+        <div class="bi-card" style="grid-column: span 2;">
             <p class="stat-label text-center">Financial Recovery</p>
-            <canvas id="penaltyChart"></canvas>
+            <canvas id="penaltyChart" style="max-height: 250px;"></canvas>
         </div>
 
     </div>
 </div>
-
 <script>
 // CHARTS LOGIC
 new Chart(document.getElementById('lineChart'), {
@@ -163,13 +159,13 @@ new Chart(document.getElementById('lineChart'), {
         labels: [<?php foreach($daily_trends as $d) echo "'".date('D', strtotime($d['date']))."',"; ?>],
         datasets: [{ label: 'Tickets', data: [<?php foreach($daily_trends as $d) echo $d['count'].","; ?>], borderColor: '#00d4ff', tension: 0.4, fill: true, backgroundColor: 'rgba(0,212,255,0.05)' }]
     },
-    options: { plugins: { legend: false }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } } }
+    options: { plugins: { legend: false }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } }, maintainAspectRatio: false }
 });
 
 new Chart(document.getElementById('penaltyChart'), {
     type: 'doughnut',
     data: { labels: ['Paid', 'Unpaid'], datasets: [{ data: [<?= $p_status['paid'] ?>, <?= $p_status['unpaid'] ?>], backgroundColor: ['#2ecc71', '#ff4d4d'], borderWidth: 0 }] },
-    options: { plugins: { legend: false }, cutout: '75%' }
+    options: { plugins: { legend: { position: 'bottom', labels: {color: '#fff'} } }, cutout: '75%', maintainAspectRatio: false }
 });
 
 new Chart(document.getElementById('maintChart'), {
@@ -178,9 +174,8 @@ new Chart(document.getElementById('maintChart'), {
         labels: [<?php foreach($m_trends as $mt) echo "'".$mt['category_name']."',"; ?>],
         datasets: [{ data: [<?php foreach($m_trends as $mt) echo $mt['count'].","; ?>], backgroundColor: ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c'], borderWidth: 0 }]
     },
-    options: { plugins: { legend: false } }
+    options: { plugins: { legend: { position: 'right', labels: {color: '#fff'} } }, maintainAspectRatio: false }
 });
 </script>
-
 </body>
 </html>
