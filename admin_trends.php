@@ -1,7 +1,7 @@
 <?php
 /**
- * LESBOT NEURAL BI COMMAND CENTER v8.0
- * ARCHITECTURE: DATA WAREHOUSING + AI STRATEGIC FORENSICS
+ * LESBOT NEURAL BI COMMAND CENTER v9.0
+ * ARCHITECTURE: DATA WAREHOUSING + AI STRATEGIC FORENSICS (POWER BI LAYOUT)
  */
 session_start();
 require_once 'db_config.php';
@@ -44,13 +44,14 @@ try {
     // 5. DW: FINANCIAL INTEGRITY
     $p_status = $pdo->query("SELECT SUM(CASE WHEN is_paid = 1 THEN 1 ELSE 0 END) as paid, SUM(CASE WHEN is_paid = 0 THEN 1 ELSE 0 END) as unpaid FROM student_penalties")->fetch(PDO::FETCH_ASSOC);
 
-    // 6. AI FORENSIC ANALYSIS (Llama 3.3)
+    // 6. AI FORENSIC ANALYSIS (Highly Structured Prompt for UI cleanliness)
     $forensic_data = json_encode(['staff' => $staff_perf, 'risk_students' => $risky_students, 'finance' => $p_status]);
-    $ai_prompt = "Act as 'Chief Forensic Auditor'. Data: $forensic_data. 
-                  1. Name the staff member with the highest rejection/failure rate.
-                  2. Name the top-risk student based on infraction frequency.
-                  3. Suggest one 'Disciplinary Enforcement' and one 'Operational Solution'.
-                  Limit: 5 precise bullet points.";
+    $ai_prompt = "Act as Chief Data Analyst. Data: $forensic_data. 
+                  Provide EXACTLY 3 very short, actionable sentences. 
+                  Format strictly as HTML <li> elements (do not use markdown, no bolding, no prefixes). 
+                  1: Identify the staff bottleneck. 
+                  2: Identify the top-risk student. 
+                  3: One operational fix.";
     $ai_insights = getLesBotResponse($ai_prompt, "Admin", $_SESSION['full_name']);
 
 } catch (PDOException $e) { die("DW Engine Error: " . $e->getMessage()); }
@@ -66,12 +67,29 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --lesbot-cyan: #00d4ff; --obsidian: #080a0f; --neon-red: #ff4d4d; --neon-border: rgba(0, 212, 255, 0.2); }
-        body { background-color: var(--obsidian); color: #fff; font-family: 'Rajdhani', sans-serif; padding-top: 80px; }
+        body { background-color: var(--obsidian); color: #fff; font-family: 'Rajdhani', sans-serif; padding-top: 80px; overflow-x: hidden; }
+        
         .neural-nav { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 1400px; background: rgba(8, 10, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid var(--neon-border); border-radius: 50px; padding: 8px 30px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
-        .bi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .bi-card { background: rgba(255,255,255,0.02); border: 1px solid var(--neon-border); border-radius: 20px; padding: 25px; backdrop-filter: blur(15px); transition: 0.3s; }
-        .ai-forensic-card { grid-column: span 2; background: linear-gradient(135deg, rgba(255, 77, 77, 0.1), rgba(0, 212, 255, 0.05)); border-color: var(--neon-red); }
-        .stat-label { font-family: 'Orbitron'; font-size: 0.6rem; letter-spacing: 2px; color: var(--lesbot-cyan); margin-bottom: 10px; }
+        
+        /* Power BI Dashboard Layout */
+        .dashboard-wrapper { display: flex; gap: 20px; align-items: stretch; max-width: 1600px; margin: 0 auto; padding-bottom: 30px; }
+        
+        /* Left Panel: AI Sidebar */
+        .ai-sidebar { width: 320px; background: linear-gradient(180deg, rgba(255, 77, 77, 0.08), rgba(0, 212, 255, 0.02)); border: 1px solid var(--neon-red); border-radius: 20px; padding: 25px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .ai-list { padding-left: 15px; color: #ffcccc; font-size: 0.95rem; line-height: 1.6; font-weight: 500; }
+        .ai-list li { margin-bottom: 12px; }
+        
+        /* Right Panel: Main Grid */
+        .main-board { flex-grow: 1; display: flex; flex-direction: column; gap: 20px; }
+        .chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        
+        .bi-card { background: rgba(255,255,255,0.02); border: 1px solid var(--neon-border); border-radius: 20px; padding: 20px; backdrop-filter: blur(15px); }
+        .stat-label { font-family: 'Orbitron'; font-size: 0.65rem; letter-spacing: 2px; color: var(--lesbot-cyan); margin-bottom: 15px; text-transform: uppercase; }
+        
+        /* Table overrides for cleanliness */
+        .table-dark { background-color: transparent !important; }
+        .table-dark th { border-bottom: 1px solid var(--neon-border); color: var(--lesbot-cyan); font-family: 'Orbitron'; font-size: 0.6rem; letter-spacing: 1px; }
+        .table-dark td { border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -82,99 +100,152 @@ try {
         <a href="admin_trends.php" style="color:var(--lesbot-cyan); text-decoration:none; font-size:0.7rem; font-family:'Orbitron'; font-weight:900;">BI_FORENSICS</a>
     </div>
 </nav>
-<div class="container-fluid px-5">
-    <div class="bi-grid">
 
-        <!-- 1. MAINTENANCE LINE TREND (Moved to Left) -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label">System Load (7D Maintenance Trend)</p>
-            <canvas id="lineChart" style="max-height: 150px;"></canvas>
-        </div>
+<div class="container-fluid px-4">
+    <div class="dashboard-wrapper">
+        
+        <div class="ai-sidebar">
+            <h5 style="color:var(--neon-red); font-family:'Orbitron'; font-size:1.1rem; font-weight:900; margin-bottom: 0;">
+                <i class="bi bi-cpu me-2"></i>Executive Summary
+            </h5>
+            <p style="font-size: 0.7rem; color: #888; margin-bottom: 15px;">AI GENERATED INSIGHTS</p>
+            <hr style="border-color:var(--neon-red); opacity:0.3; margin-top:0;">
+            
+            <ul class="ai-list">
+                <?= $ai_insights ?> 
+            </ul>
 
-        <!-- 2. AI STRATEGIC FORENSICS (Moved to Right) -->
-        <div class="bi-card ai-forensic-card">
-            <p class="stat-label text-danger"><i class="bi bi-shield-exclamation me-2"></i>Neural Forensic Report</p>
-            <div class="small" style="line-height: 1.6; color: #ffcccc;">
-                <?= nl2br($ai_insights) ?>
+            <div class="mt-auto pt-4">
+                <button class="btn btn-outline-danger w-100" style="font-family: 'Orbitron'; font-size: 0.75rem; letter-spacing: 1px; border-radius: 12px;" onclick="alert('Compiling comprehensive forensic PDF module...')">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>GENERATE DEEP SCAN
+                </button>
             </div>
         </div>
 
-        <!-- 3. STAFF PERFORMANCE FORENSICS -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label">Staff Accountability Index</p>
-            <table class="table table-dark table-hover small m-0">
-                <thead><tr class="opacity-50"><th>NAME</th><th>RESOLVED</th><th>REJECTIONS</th><th>SLA RATE</th></tr></thead>
-                <tbody>
-                    <?php foreach($staff_perf as $s): 
-                        $rate = ($s['assigned'] > 0) ? ($s['resolved'] / $s['assigned']) * 100 : 0;
-                    ?>
-                    <tr>
-                        <td><?= $s['name'] ?></td>
-                        <td class="text-success"><?= $s['resolved'] ?></td>
-                        <td class="<?= $s['total_rejections'] > 2 ? 'text-danger' : 'text-white' ?>"><?= $s['total_rejections'] ?></td>
-                        <td class="font-orbitron"><?= round($rate) ?>%</td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+        <div class="main-board">
+            
+            <div class="chart-grid">
+                
+                <div class="bi-card">
+                    <p class="stat-label"><i class="bi bi-graph-up text-white me-2"></i>System Load (7D Trend)</p>
+                    <canvas id="lineChart" style="max-height: 200px;"></canvas>
+                </div>
 
-        <!-- 4. STUDENT RISK LEADERBOARD -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label">High-Risk Residents (Infraction Leaders)</p>
-            <table class="table table-dark table-hover small m-0">
-                <thead><tr class="opacity-50"><th>MATRIC</th><th>NAME</th><th>INCIDENTS</th><th>DEBT</th></tr></thead>
-                <tbody>
-                    <?php foreach($risky_students as $rs): ?>
-                    <tr>
-                        <td class="text-info"><?= $rs['matric_number'] ?></td>
-                        <td><?= $rs['name'] ?></td>
-                        <td class="text-center"><?= $rs['total_penalties'] ?></td>
-                        <td class="text-danger">RM <?= $rs['total_debt'] ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <div class="bi-card">
+                    <p class="stat-label"><i class="bi bi-bar-chart-fill text-white me-2"></i>Staff Rejection Volume</p>
+                    <canvas id="barChart" style="max-height: 200px;"></canvas>
+                </div>
 
-        <!-- 5. CATEGORY DISTRIBUTION (PIE) -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label text-center">Category Hotspots</p>
-            <canvas id="maintChart" style="max-height: 250px;"></canvas>
-        </div>
+                <div class="bi-card">
+                    <p class="stat-label"><i class="bi bi-pie-chart-fill text-white me-2"></i>Category Hotspots</p>
+                    <canvas id="maintChart" style="max-height: 200px;"></canvas>
+                </div>
 
-        <!-- 6. FINANCIAL SETTLEMENT (DOUGHNUT) -->
-        <div class="bi-card" style="grid-column: span 2;">
-            <p class="stat-label text-center">Financial Recovery</p>
-            <canvas id="penaltyChart" style="max-height: 250px;"></canvas>
-        </div>
+                <div class="bi-card">
+                    <p class="stat-label"><i class="bi bi-cash-stack text-white me-2"></i>Financial Recovery Status</p>
+                    <canvas id="penaltyChart" style="max-height: 200px;"></canvas>
+                </div>
 
+            </div>
+
+            <div class="chart-grid">
+                
+                <div class="bi-card">
+                    <p class="stat-label">Staff Accountability Ledger</p>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover small m-0">
+                            <thead><tr><th>NAME</th><th>RESOLVED</th><th>REJECTIONS</th><th>SLA RATE</th></tr></thead>
+                            <tbody>
+                                <?php foreach($staff_perf as $s): 
+                                    $rate = ($s['assigned'] > 0) ? ($s['resolved'] / $s['assigned']) * 100 : 0;
+                                ?>
+                                <tr>
+                                    <td class="fw-bold"><?= htmlspecialchars($s['name']) ?></td>
+                                    <td class="text-success"><?= $s['resolved'] ?></td>
+                                    <td class="<?= $s['total_rejections'] > 2 ? 'text-danger fw-bold' : 'text-white' ?>"><?= $s['total_rejections'] ?></td>
+                                    <td style="font-family:'Orbitron';"><?= round($rate) ?>%</td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bi-card">
+                    <p class="stat-label">High-Risk Residents Ledger</p>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover small m-0">
+                            <thead><tr><th>MATRIC</th><th>NAME</th><th>INCIDENTS</th><th>DEBT</th></tr></thead>
+                            <tbody>
+                                <?php foreach($risky_students as $rs): ?>
+                                <tr>
+                                    <td class="text-info" style="font-family:'Orbitron'; font-size:0.75rem;"><?= htmlspecialchars($rs['matric_number']) ?></td>
+                                    <td class="fw-bold"><?= htmlspecialchars($rs['name']) ?></td>
+                                    <td class="text-center text-warning"><?= $rs['total_penalties'] ?></td>
+                                    <td class="text-danger fw-bold">RM <?= number_format($rs['total_debt'], 2) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
     </div>
 </div>
+
 <script>
-// CHARTS LOGIC
+// CHART GLOBAL CONFIG
+Chart.defaults.color = '#888';
+Chart.defaults.font.family = 'Rajdhani';
+
+// 1. LINE CHART (System Load)
 new Chart(document.getElementById('lineChart'), {
     type: 'line',
     data: {
         labels: [<?php foreach($daily_trends as $d) echo "'".date('D', strtotime($d['date']))."',"; ?>],
-        datasets: [{ label: 'Tickets', data: [<?php foreach($daily_trends as $d) echo $d['count'].","; ?>], borderColor: '#00d4ff', tension: 0.4, fill: true, backgroundColor: 'rgba(0,212,255,0.05)' }]
+        datasets: [{ label: 'Tickets', data: [<?php foreach($daily_trends as $d) echo $d['count'].","; ?>], borderColor: '#00d4ff', tension: 0.4, fill: true, backgroundColor: 'rgba(0,212,255,0.1)', borderWidth: 2 }]
     },
-    options: { plugins: { legend: false }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#666' } } }, maintainAspectRatio: false }
+    options: { plugins: { legend: false }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, maintainAspectRatio: false }
 });
 
-new Chart(document.getElementById('penaltyChart'), {
-    type: 'doughnut',
-    data: { labels: ['Paid', 'Unpaid'], datasets: [{ data: [<?= $p_status['paid'] ?>, <?= $p_status['unpaid'] ?>], backgroundColor: ['#2ecc71', '#ff4d4d'], borderWidth: 0 }] },
-    options: { plugins: { legend: { position: 'bottom', labels: {color: '#fff'} } }, cutout: '75%', maintainAspectRatio: false }
+// 2. BAR CHART (Staff Rejections)
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: [<?php foreach($staff_perf as $s) echo "'".htmlspecialchars($s['name'])."',"; ?>],
+        datasets: [{
+            label: 'Rejections',
+            data: [<?php foreach($staff_perf as $s) echo $s['total_rejections'].","; ?>],
+            backgroundColor: 'rgba(255, 77, 77, 0.7)',
+            borderColor: '#ff4d4d',
+            borderWidth: 1,
+            borderRadius: 4
+        }]
+    },
+    options: { plugins: { legend: false }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } }, maintainAspectRatio: false }
 });
 
+// 3. PIE CHART (Hotspots)
 new Chart(document.getElementById('maintChart'), {
     type: 'pie',
     data: {
-        labels: [<?php foreach($m_trends as $mt) echo "'".$mt['category_name']."',"; ?>],
-        datasets: [{ data: [<?php foreach($m_trends as $mt) echo $mt['count'].","; ?>], backgroundColor: ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c'], borderWidth: 0 }]
+        labels: [<?php foreach($m_trends as $mt) echo "'".htmlspecialchars($mt['category_name'])."',"; ?>],
+        datasets: [{ data: [<?php foreach($m_trends as $mt) echo $mt['count'].","; ?>], backgroundColor: ['#00d4ff', '#ff4d4d', '#f1c40f', '#9b59b6', '#2ecc71'], borderWidth: 0 }]
     },
-    options: { plugins: { legend: { position: 'right', labels: {color: '#fff'} } }, maintainAspectRatio: false }
+    options: { plugins: { legend: { position: 'right', labels: { color: '#ccc', font: {size: 10} } } }, maintainAspectRatio: false }
+});
+
+// 4. DOUGHNUT CHART (Finances)
+new Chart(document.getElementById('penaltyChart'), {
+    type: 'doughnut',
+    data: { 
+        labels: ['Settled', 'Outstanding'], 
+        datasets: [{ data: [<?= (int)$p_status['paid'] ?>, <?= (int)$p_status['unpaid'] ?>], backgroundColor: ['#2ecc71', '#ff4d4d'], borderWidth: 0 }] 
+    },
+    options: { plugins: { legend: { position: 'right', labels: { color: '#ccc', font: {size: 10} } } }, cutout: '70%', maintainAspectRatio: false }
 });
 </script>
 </body>
