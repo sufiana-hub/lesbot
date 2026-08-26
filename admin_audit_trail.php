@@ -1,3 +1,5 @@
+//admin_audit_trail.php//
+
 <?php
 session_start();
 require_once 'db_config.php';

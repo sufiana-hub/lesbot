@@ -1,3 +1,5 @@
+//db_config.php - Database Connection Configuration for LesBot 24/7 Helpdesk//
+
 <?php
 // --- DBA DYNAMIC ENVIRONMENT DETECTION ---
 // Identify if running locally or on the Azure web host

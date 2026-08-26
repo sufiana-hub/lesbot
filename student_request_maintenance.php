@@ -1,3 +1,5 @@
+//student_request_maintenance.php - Allows Students to Submit Maintenance Requests to the LesBot 24/7 Helpdesk//
+
 <?php
 session_start();
 require_once 'db_config.php';

@@ -1,3 +1,5 @@
+//export_data.php - Exports Student List and Maintenance Log to CSV for Admins//
+
 <?php
 session_start();
 require_once 'db_config.php';

@@ -1,3 +1,5 @@
+//login.php - Handles User Authentication and Session Management for LesBot 24/7 Helpdesk//
+
 <?php
 /**
  * LESBOT NEURAL LOGIN

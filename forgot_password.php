@@ -1,3 +1,6 @@
+
+//forgot_password.php - Allows Users to Reset Their Password//
+
 <?php
 session_start();
 require_once 'db_config.php';

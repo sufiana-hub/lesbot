@@ -1,3 +1,5 @@
+//verify_token.php - Handles Password Reset Token Verification and Password Update for Users//
+
 <?php
 session_start();
 require_once 'db_config.php';

@@ -1,3 +1,5 @@
+//admin_add_staff.php//
+
 <?php
 /**
  * LESBOT STAFF INITIALIZATION

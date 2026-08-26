@@ -1,3 +1,5 @@
+//maintenance.php - Displays Maintenance Tickets for Logged-in Students//
+
 <?php
 session_start();
 require_once 'db_config.php';

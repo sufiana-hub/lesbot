@@ -1,3 +1,5 @@
+//staff_dashboard.php - Staff Dashboard for LesBot 24/7 Helpdesk//
+
 <?php
 session_start();
 require_once 'db_config.php';
