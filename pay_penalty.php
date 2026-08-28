@@ -1,4 +1,4 @@
-//pay_penalty.php - Handles Penalty Payment Processing via ToyyibPay API for LesBot 24/7 Helpdesk//
+
 
 <?php
 /**

@@ -1,4 +1,4 @@
-//admin_maintenance.php//
+
 
 <?php
 session_start();

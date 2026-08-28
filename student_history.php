@@ -1,4 +1,4 @@
-//student_history.php - Displays Student Activity History for Authenticated Users//
+
 
 <?php
 session_start();

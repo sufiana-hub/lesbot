@@ -1,4 +1,4 @@
-//admin_trends.php//
+
 
 <?php
 /**

@@ -1,4 +1,3 @@
-//maintenance_report.php//
 
 <?php
 session_start();

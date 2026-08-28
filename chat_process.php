@@ -1,4 +1,4 @@
-//chat_process.php - Handles incoming chat messages and generates AI responses//
+
 
 <?php
 session_start();

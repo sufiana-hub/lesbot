@@ -1,4 +1,4 @@
-//chatbot_component.php - The Chatbot UI Component for LesBot 24/7 Helpdesk//
+
 
 <!-- chatbot_component.php -->
 <div id="lesbot-chat-container" class="glass-card shadow-lg" style="position: fixed; bottom: 100px; right: 30px; width: 350px; display: none; z-index: 9999; border: 1px solid var(--lesbot-cyan); background: rgba(8, 10, 15, 0.95); backdrop-filter: blur(20px);">

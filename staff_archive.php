@@ -1,4 +1,4 @@
-//staff_archive.php - Displays Archived Maintenance Requests for Authenticated Staff Users//
+
 
 <?php
 session_start();

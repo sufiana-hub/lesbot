@@ -1,6 +1,4 @@
 
-//force_reset.php - Forces User to Reset Password on First Login//
-
 <?php
 session_start();
 require_once 'db_config.php';

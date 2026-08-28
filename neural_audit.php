@@ -1,4 +1,4 @@
-//neural_audit.php - Handles External Audit Requests from Postman for LesBot 24/7 Helpdesk//
+
 
 <?php
 require_once 'db_config.php';

@@ -1,4 +1,4 @@
-//signup.php - Handles User Registration and Identity Creation for LesBot 24/7 Helpdesk//
+
 
 <?php
 /**

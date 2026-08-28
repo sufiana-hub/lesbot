@@ -1,4 +1,4 @@
-//student_penalties.php - Displays Student Penalties and Payment History for Authenticated Users//
+
 
 <?php
 /**

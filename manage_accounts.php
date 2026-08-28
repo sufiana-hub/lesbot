@@ -1,4 +1,4 @@
-//manage_accounts.php - Admin Entity Management Hub for LesBot 24/7 Helpdesk//
+
 
 <?php
 session_start();

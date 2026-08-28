@@ -1,4 +1,4 @@
-//staff_update_status.php - Updates the Status of Maintenance Requests for Authenticated Staff Users//
+
 
 <?php
 session_start();

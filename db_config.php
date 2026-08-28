@@ -1,4 +1,4 @@
-//db_config.php - Database Connection Configuration for LesBot 24/7 Helpdesk//
+
 
 <?php
 // --- DBA DYNAMIC ENVIRONMENT DETECTION ---

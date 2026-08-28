@@ -1,4 +1,4 @@
-//callback.php - Secret Background Listener//
+
 
 <?php
 // callback.php - Secret Background Listener

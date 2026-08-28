@@ -1,4 +1,4 @@
-//view_receipt.php - Displays Payment Receipt for Student Penalties after Successful Transaction//
+
 
 <?php
 session_start();

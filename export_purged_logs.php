@@ -1,4 +1,3 @@
-//export_purged_logs.php - Exports Purge Logs to CSV for Admins//
 
 <?php
 session_start();

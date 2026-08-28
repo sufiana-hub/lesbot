@@ -1,4 +1,4 @@
-//staff_penalties.php - Displays Issued Penalties for Authenticated Staff Users//
+
 
 <?php
 /**

@@ -1,4 +1,3 @@
-//logout.php - Handles User Logout and Session Termination for LesBot 24/7 Helpdesk//
 
 <?php
 session_start();

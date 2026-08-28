@@ -1,4 +1,4 @@
-//maintenance.php - Displays Maintenance Tickets for Logged-in Students//
+
 
 <?php
 session_start();
