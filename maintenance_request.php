@@ -1,0 +1,283 @@
+<?php
+session_start();
+require_once 'db_config.php';
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
+// --- 1. NEURAL MAIL ENGINE (PHPMailer) ---
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Ensure this points to your vendor folder where PHPMailer is installed
+if (file_exists('vendor/autoload.php')) {
+    require 'vendor/autoload.php';
+}
+
+/**
+ * 2. NEURAL AUDIT BYPASS 
+ * Allows the Data Tier to be tested via Postman without session dependency.
+ */
+$is_audit = (isset($_POST['audit_key']) && $_POST['audit_key'] === 'LESBOT_INTERNAL_AUDIT_2026');
+
+if (!$is_audit) {
+    if (!isset($_SESSION['std_id']) || $_SESSION['role'] !== 'Student') {
+        header("Location: login.php");
+        exit();
+    }
+    $student_id = $_SESSION['std_id'];
+} else {
+    // Postman Identity for Data Warehouse tracking
+    $student_id = 'B032410816'; 
+}
+
+// 3. DATA ACQUISITION
+$cat_stmt = $pdo->query("SELECT * FROM category ORDER BY category_name ASC");
+$categories = $cat_stmt->fetchAll();
+
+// Initialize message variables
+$success = null;
+$error = null;
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $category_id = $_POST['category_id'] ?? 1; 
+    $priority = $_POST['priority'] ?? 'Medium';
+    $description = trim($_POST['description'] ?? 'Neural Audit Mode');
+    $request_id = "REQ-" . date("YmdHis"); 
+
+    try {
+        // 4. AUTO-ASSIGN LOGIC (FETCH STAFF DETAILS FOR EMAIL)
+        $staff_query = "SELECT s.staff_id, s.email, s.staff_name 
+                        FROM staff s 
+                        WHERE s.department = 'Maintenance' 
+                        ORDER BY (SELECT COUNT(*) FROM maintenance_request WHERE assigned_staff_id = s.staff_id AND status != 'Completed') ASC 
+                        LIMIT 1";
+        $staff_row = $pdo->query($staff_query)->fetch(PDO::FETCH_ASSOC);
+        
+        $assigned_staff_id = $staff_row['staff_id'] ?? null;
+        $staff_email = $staff_row['email'] ?? null;
+        $staff_name = $staff_row['staff_name'] ?? 'Specialist';
+
+        // 5. DATABASE COMMIT
+        $sql = "INSERT INTO maintenance_request (request_id, student_id, category_id, description, priority, status, assigned_staff_id, created_at) 
+                VALUES (?, ?, ?, ?, ?, 'In Progress', ?, NOW())";
+        $stmt = $pdo->prepare($sql);
+        
+        if ($stmt->execute([$request_id, $student_id, $category_id, $description, $priority, $assigned_staff_id])) {
+            
+            // --- FIX FOR THE WARNING IN YOUR SCREENSHOT ---
+            $email_status = ""; // Initialize as empty so line 110 doesn't error
+
+            // 6. GMAIL NOTIFICATION TRANSMISSION
+            if ($staff_email) {
+                $mail = new PHPMailer(true);
+                try {
+                    // SMTP Server settings
+                    $mail->isSMTP();
+                    $mail->Host       = 'smtp.gmail.com';
+                    $mail->SMTPAuth   = true;
+                    $mail->Username   = 'your-gmail@gmail.com'; // [ACTION]: Put your Gmail here
+                    $mail->Password   = 'your-app-password';    // [ACTION]: Put your 16-digit App Password here
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mail->Port       = 587;
+
+                    // Recipients
+                    $mail->setFrom('lesbot-system@utem.edu.my', 'LESBOT PROTOCOL');
+                    $mail->addAddress($staff_email, $staff_name);
+
+                    // Content
+                    $mail->isHTML(true);
+                    $mail->Subject = "NEW MAINTENANCE ASSIGNMENT: $request_id";
+                    $mail->Body    = "
+                        <div style='background-color: #080a0f; color: #ffffff; padding: 25px; font-family: sans-serif; border: 2px solid #00d4ff;'>
+                            <h2 style='color: #00d4ff;'>NEW TASK ASSIGNED</h2>
+                            <p>Greetings <strong>$staff_name</strong>,</p>
+                            <p>The LesBot system has auto-assigned a new maintenance report to your terminal.</p>
+                            <hr style='border: 0; border-top: 1px solid #333;'>
+                            <p><strong>Request ID:</strong> $request_id</p>
+                            <p><strong>Priority:</strong> $priority</p>
+                            <p><strong>Description:</strong> $description</p>
+                            <hr style='border: 0; border-top: 1px solid #333;'>
+                            <p style='font-size: 11px; color: #666;'>SYSTEM AUTO-GENERATED MESSAGE • NEURAL LOGGING</p>
+                        </div>";
+
+                    $mail->send();
+                    $email_status = "(Staff Notified via Gmail)";
+                } catch (Exception $e) {
+                    $email_status = "(Gmail Notification Offline)";
+                }
+            }
+
+            // 7. THE CRITICAL API HANDSHAKE (POSTMAN BYPASS)
+            if ($is_audit && isset($_POST['audit_mode'])) {
+                header('Content-Type: text/plain');
+                echo "NEURAL LINK ESTABLISHED"; 
+                exit(); 
+            }
+            
+            $success = "NEURAL LINK ESTABLISHED: Request #$request_id assigned. $email_status";
+        }
+    } catch (PDOException $e) { 
+        if ($is_audit) { echo "DB ERROR: " . $e->getMessage(); exit(); }
+        $error = "TRANSMISSION ERROR: " . $e->getMessage(); 
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LesBot | Log Report</title>
+<meta name="google-site-verification" content="ZzO5CLldp_eWizT5IFW6oUvs_ViGd49GW_un7BfK1qc" />
+<meta name="description" content="LesBot - UTeM Lestari Dormitory Management System">
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<style>
+    :root { 
+        --lesbot-cyan: #00d4ff; 
+        --obsidian: #080a0f; 
+        --glass: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(0, 212, 255, 0.2);
+    }
+
+    body { 
+        background-color: var(--obsidian); 
+        background-image: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.07) 0%, transparent 80%);
+        color: #FFFFFF; 
+        font-family: 'Rajdhani', sans-serif; 
+        margin: 0;
+        padding-top: 100px;
+        min-height: 100vh;
+    }
+
+    .neural-nav {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        width: 90%; max-width: 1200px; background: rgba(8, 10, 15, 0.8);
+        backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+        border-radius: 50px; padding: 10px 30px; display: flex;
+        justify-content: space-between; align-items: center; z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .nav-brand { font-family: 'Orbitron'; font-weight: 900; color: var(--lesbot-cyan); text-decoration: none; }
+    .nav-links-container { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+    .nav-links-container a { 
+        color: rgba(255, 255, 255, 0.7); text-decoration: none; font-family: 'Orbitron'; 
+        font-size: 0.7rem; letter-spacing: 1px; padding: 8px 15px; border-radius: 20px; transition: 0.3s;
+    }
+    .nav-links-container a:hover, .nav-links-container a.active { color: var(--lesbot-cyan); background: rgba(0, 212, 255, 0.1); }
+
+    .system-container {
+        background: var(--glass); border: 1px solid var(--glass-border);
+        border-radius: 30px; padding: 50px; backdrop-filter: blur(10px);
+        max-width: 900px; margin: 0 auto;
+    }
+
+    .form-control, .form-select {
+        background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border);
+        color: white; border-radius: 12px; padding: 12px 20px;
+        font-family: 'Rajdhani'; transition: 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        background: rgba(0,0,0,0.5); border-color: var(--lesbot-cyan);
+        color: white; box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    }
+
+    .input-label { 
+        font-family: 'Orbitron'; font-size: 0.7rem; color: var(--lesbot-cyan); 
+        letter-spacing: 2px; margin-bottom: 8px; font-weight: 700;
+    }
+
+    .btn-neural-submit {
+        background: var(--lesbot-cyan); color: var(--obsidian);
+        font-family: 'Orbitron'; font-weight: 900; font-size: 0.85rem;
+        letter-spacing: 2px; padding: 18px; border: none; border-radius: 15px;
+        transition: 0.3s; width: 100%; box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+    }
+    .btn-neural-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 212, 255, 0.5);
+    }
+
+    .btn-neural-outline {
+        background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2);
+        font-family: 'Orbitron'; font-size: 0.75rem; padding: 15px; border-radius: 15px;
+        text-decoration: none; display: block; text-align: center; transition: 0.3s;
+    }
+    .btn-neural-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
+</style>
+</head>
+<body>
+<nav class="neural-nav">
+    <a href="index.php" class="nav-brand">LESBOT<span style="color:#fff">•</span></a>
+    <ul class="nav-links-container">
+        <li><a href="student_dashboard.php">UTAMA</a></li>
+        <li><a href="maintenance_report.php" class="active">REPORT</a></li>
+        <li><a href="student_penalties.php">PENALTIES</a></li>
+        <li><a href="student_history.php">HISTORY</a></li>
+    </ul>
+    <a href="logout.php" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" style="font-family: 'Orbitron'; font-size: 0.6rem;">DISCONNECT</a>
+</nav>
+
+<div class="container mt-4 mb-5">
+    <div class="system-container shadow-lg">
+        <div class="text-center mb-5">
+            <h2 style="font-family: 'Orbitron'; font-weight: 900; margin: 0; color: var(--lesbot-cyan);">REPORT <span style="color: #fff;">ISSUE</span></h2>
+            <p class="text-white-50 small mt-2" style="letter-spacing: 2px;">NEURAL LOGGING PROTOCOL • MAINTENANCE v3.0</p>
+        </div>
+
+        <?php if($success): ?>
+            <div class="alert alert-info bg-dark border-info text-info text-center py-3 mb-4 rounded-3">
+                <i class="bi bi-cpu-fill me-2"></i> <?= $success ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if($error): ?>
+            <div class="alert alert-danger bg-dark border-danger text-danger text-center py-3 mb-4 rounded-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= $error ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST">
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <label class="input-label">ISSUE CLASSIFICATION</label>
+                    <select name="category_id" class="form-select" required>
+                        <option value="" disabled selected>Select Category...</option>
+                        <?php foreach($categories as $cat): ?>
+                            <option value="<?= $cat['category_id'] ?>">
+                                <?= strtoupper($cat['category_name']) ?> (Class: <?= $cat['severity_level'] ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="input-label">PRIORITY LEVEL</label>
+                    <select name="priority" class="form-select" required>
+                        <option value="Low">LOW</option>
+                        <option value="Medium" selected>MEDIUM</option>
+                        <option value="High">HIGH</option>
+                        <option value="Urgent">URGENT</option>
+                        <option value="Critical">CRITICAL</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="input-label">NEURAL DESCRIPTION</label>
+                <textarea name="description" class="form-control" rows="5" placeholder="Describe the hardware glitch or physical malfunction in detail..." required></textarea>
+            </div>
+
+            <div class="d-grid gap-3">
+                <button type="submit" class="btn-neural-submit">
+                    <i class="bi bi-broadcast me-2"></i> TRANSMIT REPORT
+                </button>
+                <a href="student_dashboard.php" class="btn-neural-outline">
+                    <i class="bi bi-arrow-left me-2"></i> ABORT AND HUB
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<?php include 'chatbot_component.php'; ?>
+</body>
+</html>
