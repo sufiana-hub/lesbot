@@ -1,4 +1,3 @@
-//admin_assign_staff.php//
 
 <?php
 session_start();
@@ -35,6 +34,7 @@ $staff_list = $pdo->query("SELECT s.staff_id, u.name, s.department FROM staff s 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+//admin_assign_staff.php//
 
  
     <title>LesBot | Assign Technician</title>

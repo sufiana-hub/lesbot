@@ -1,4 +1,3 @@
-//admin_audit_trail.php//
 
 <?php
 session_start();
@@ -21,6 +20,8 @@ try {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    //admin_audit_trail.php//
+    
     <meta charset="utf-8">
     <title>LesBot | Neural Audit Trail</title>
 

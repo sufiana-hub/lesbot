@@ -1,4 +1,3 @@
-//admin_add_staff.php//
 
 <?php
 /**
@@ -83,6 +82,7 @@ $stmtUser->execute([$staff_id, $name, $email, $password]);
 <!DOCTYPE html>
 <html lang="en">
 <head>
+//admin_add_staff.php//
 
 
     <meta charset="utf-8">
