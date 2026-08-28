@@ -1,4 +1,3 @@
-//index.php - Main Landing Page for LesBot 24/7 Helpdesk//
 
 <!DOCTYPE html>
 <html lang="en">
