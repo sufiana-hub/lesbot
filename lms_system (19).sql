@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `category` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `category_id` int NOT NULL,
   `category_name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `severity_level` enum('Low','Medium','High','Urgent','Critical') COLLATE utf8mb4_general_ci DEFAULT 'Medium'
@@ -57,7 +57,7 @@ INSERT INTO `category` (`my_row_id`, `category_id`, `category_name`, `severity_l
 --
 
 CREATE TABLE `maintenance_history` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `history_id` int NOT NULL,
   `request_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `action` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE `maintenance_history` (
 --
 
 CREATE TABLE `maintenance_request` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `request_id` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `student_id` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `category_id` int NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE `payment_transactions` (
 --
 
 CREATE TABLE `penalty_types` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `penalty_type_id` int NOT NULL,
   `description` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `default_amount` decimal(10,2) NOT NULL
@@ -157,7 +157,7 @@ INSERT INTO `penalty_types` (`my_row_id`, `penalty_type_id`, `description`, `def
 --
 
 CREATE TABLE `staff` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `staff_id` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `phone_num` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `department` varchar(50) COLLATE utf8mb4_general_ci DEFAULT 'Maintenance'
@@ -180,7 +180,7 @@ INSERT INTO `staff` (`my_row_id`, `staff_id`, `phone_num`, `department`) VALUES
 --
 
 CREATE TABLE `student` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `matric_number` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `room_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `year_sem` varchar(30) COLLATE utf8mb4_general_ci NOT NULL
@@ -245,7 +245,7 @@ INSERT INTO `student_penalties` (`penalty_id`, `matric_number`, `penalty_type_id
 --
 
 CREATE TABLE `student_room_history` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `history_id` int NOT NULL,
   `matric_number` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `room_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
@@ -266,7 +266,7 @@ CREATE TABLE `system_audit_trail` (
   `target_entity` varchar(50) DEFAULT NULL,
   `action_details` text,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `system_audit_trail`
@@ -301,7 +301,7 @@ INSERT INTO `system_audit_trail` (`audit_id`, `admin_id`, `action_type`, `target
 --
 
 CREATE TABLE `tbl_chat_log` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `log_id` int NOT NULL,
   `session_id` int NOT NULL,
   `user_message` text COLLATE utf8mb4_general_ci,
@@ -317,7 +317,7 @@ CREATE TABLE `tbl_chat_log` (
 --
 
 CREATE TABLE `tbl_chat_session` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `session_id` int NOT NULL,
   `user_id` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `start_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -331,7 +331,7 @@ CREATE TABLE `tbl_chat_session` (
 --
 
 CREATE TABLE `users` (
-  `my_row_id` bigint UNSIGNED NOT NULL INVISIBLE,
+  `my_row_id` bigint UNSIGNED NOT NULL ,
   `user_id` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `email` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -455,37 +455,37 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=11;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `maintenance_history`
 --
 ALTER TABLE `maintenance_history`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT ;
 
 --
 -- AUTO_INCREMENT for table `maintenance_request`
 --
 ALTER TABLE `maintenance_request`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=12;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `penalty_types`
 --
 ALTER TABLE `penalty_types`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=12;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `staff`
 --
 ALTER TABLE `staff`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=11;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `student`
 --
 ALTER TABLE `student`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=8;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `student_penalties`
@@ -497,7 +497,7 @@ ALTER TABLE `student_penalties`
 -- AUTO_INCREMENT for table `student_room_history`
 --
 ALTER TABLE `student_room_history`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT ;
 
 --
 -- AUTO_INCREMENT for table `system_audit_trail`
@@ -509,19 +509,19 @@ ALTER TABLE `system_audit_trail`
 -- AUTO_INCREMENT for table `tbl_chat_log`
 --
 ALTER TABLE `tbl_chat_log`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=2;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tbl_chat_session`
 --
 ALTER TABLE `tbl_chat_session`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=2;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT INVISIBLE, AUTO_INCREMENT=19;
+  MODIFY `my_row_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT , AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
