@@ -48,7 +48,7 @@ if (!$apiKey || $apiKey === false) {
 
 // 3. DATA PAYLOAD (Refined for Professional Output)
 $postData = [
-    "model" => "llama-3.1-8b-instant", // Use this: It is fast, smart, and has high rate limits
+    "model" => "openai/gpt-oss-20b", // Use this: It is fast, smart, and has high rate limits
     "messages" => [
         [
             "role" => "system", 
