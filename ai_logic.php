@@ -46,15 +46,22 @@ if (!$apiKey || $apiKey === false) {
     RESPONSE STYLE:
     - Be tech-savvy, futuristic, and helpful. Translate any text if requested.";
 
-    // 3. DATA PAYLOAD
-    $postData = [
-        "model" => "qwen/qwen3.6-27b",
-        "messages" => [
-            ["role" => "system", "content" => $systemInstruction],
-            ["role" => "user", "content" => $userInput]
+// 3. DATA PAYLOAD (Refined for Professional Output)
+$postData = [
+    "model" => "llama-3.1-8b-instant", // Use this: It is fast, smart, and has high rate limits
+    "messages" => [
+        [
+            "role" => "system", 
+            "content" => "You are LesBot, the 24/7 Neural Helpdesk for Lestari Dormitory, UTeM. 
+                          CRITICAL: Do NOT show your thinking process. 
+                          Output ONLY the final response. 
+                          Keep the tone futuristic, tech-savvy, and professional. 
+                          Acknowledge the user's language (Malay or English) and reply naturally."
         ],
-        "temperature" => 0.7
-    ];
+        ["role" => "user", "content" => $userInput]
+    ],
+    "temperature" => 0.6 // Lower temperature makes it more consistent
+];
 
     // 4. CURL EXECUTION
     $ch = curl_init($url);
