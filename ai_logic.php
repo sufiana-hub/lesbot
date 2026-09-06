@@ -48,7 +48,7 @@ if (!$apiKey || $apiKey === false) {
 
     // 3. DATA PAYLOAD
     $postData = [
-        "model" => "llama-3.3-70b-versatile",
+        "model" => "llama-3.1-70b-versatile",
         "messages" => [
             ["role" => "system", "content" => $systemInstruction],
             ["role" => "user", "content" => $userInput]
