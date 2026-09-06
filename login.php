@@ -1,7 +1,6 @@
 <?php
 /**
- * LESBOT NEURAL LOGIN
- * HIGH-LEVEL ENCRYPTION & STRICT IDENTITY PROTOCOL v4.0
+ * LESBOT NEURAL LOGIN - FINAL CLOUD REPAIR
  */
 session_start();
 require_once 'db_config.php';
@@ -13,47 +12,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pass = $_POST['password'];
 
     try {
-        /** 
-         * DBA SECURITY UPGRADE: 
-         * 1. Use 'BINARY' to force case-sensitivity on the Identifier (ID/Email).
-         * 2. We ONLY fetch the user data here. We do not check the password in SQL
-         *    because high-level hashes cannot be compared via simple strings.
-         */
+        // FIXED: We use two different placeholders (:id1 and :id2) to avoid HY093 error
         $sql = "SELECT * FROM users 
-                WHERE (BINARY user_id = :id OR BINARY email = :id) 
+                WHERE (BINARY user_id = :id1 OR BINARY email = :id2) 
                 LIMIT 1";
                 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['id' => $identifier]);
+        // We pass the same identifier to both placeholders
+        $stmt->execute([
+            'id1' => $identifier, 
+            'id2' => $identifier
+        ]);
+        
         $user = $stmt->fetch();
 
-        /**
-         * 3. HIGH-LEVEL VERIFICATION:
-         * password_verify() is the industry standard. It handles the 
-         * complex salt and algorithm logic (Argon2id/BCrypt) automatically.
-         */
-if ($user && password_verify($pass, $user['password'])) {
-    // Store common session data
-    $_SESSION['std_id']    = $user['user_id'];
-    $_SESSION['full_name'] = $user['name'];
-    $_SESSION['role']      = $user['role'];
+        if ($user && password_verify($pass, $user['password'])) {
+            // Store session data
+            $_SESSION['std_id']    = $user['user_id'];
+            $_SESSION['full_name'] = $user['name'];
+            $_SESSION['role']      = $user['role'];
 
-    // --- VISIONARY GUARD LOGIC ---
-    if ($user['requires_reset'] == 1) {
-        header("Location: force_reset.php");
-        exit();
-    }
-    
-    // Standard redirection if no reset is needed
-    switch ($user['role']) {
-        case 'Admin': header("Location: admin_dashboard.php"); break;
-        case 'Staff': header("Location: staff_dashboard.php"); break;
-        case 'Student': header("Location: student_dashboard.php"); break;
-    }
-    exit();
-}else {
-            // Triggered if ID doesn't exist OR password/case is wrong
-            $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your case-sensitivity or key credentials.";
+            if (isset($user['requires_reset']) && $user['requires_reset'] == 1) {
+                header("Location: force_reset.php");
+                exit();
+            }
+            
+            switch ($user['role']) {
+                case 'Admin': header("Location: admin_dashboard.php"); break;
+                case 'Staff': header("Location: staff_dashboard.php"); break;
+                case 'Student': header("Location: student_dashboard.php"); break;
+            }
+            exit();
+        } else {
+            $error = "ACCESS DENIED: IDENTITY MISMATCH. Check your credentials.";
         }
     } catch (PDOException $e) { 
         $error = "CORE ERROR: " . $e->getMessage(); 
