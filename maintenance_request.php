@@ -6,6 +6,12 @@ date_default_timezone_set('Asia/Kuala_Lumpur');
 // --- 1. NEURAL MAIL ENGINE ---
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
+// Pointing to your specific folder on GitHub
+require 'phpmailer/Exception.php';
+require 'phpmailer/PHPMailer.php';
+require 'phpmailer/SMTP.php';
 
 if (file_exists('vendor/autoload.php')) {
     require 'vendor/autoload.php';
@@ -66,21 +72,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             $email_status = ""; 
 
-            // 6. GMAIL TRANSMISSION
+// 6. GMAIL TRANSMISSION
             if ($staff_email) {
                 $mail = new PHPMailer(true);
                 try {
+                    // Server settings
                     $mail->isSMTP();
                     $mail->Host       = 'smtp.gmail.com';
                     $mail->SMTPAuth   = true;
-                    $mail->Username   = 'your-gmail@gmail.com'; // [ACTION]: Put your Gmail here
-                    $mail->Password   = 'your-app-password';    // [ACTION]: Put your 16-digit App Password here
+                    // These variables pull from your Heroku Config Vars
+                    $mail->Username   = getenv('SMTP_USER'); 
+                    $mail->Password   = getenv('SMTP_PASS'); 
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                     $mail->Port       = 587;
 
-                    $mail->setFrom('lesbot-system@utem.edu.my', 'LESBOT PROTOCOL');
+                    // Recipients
+                    $mail->setFrom(getenv('SMTP_USER'), 'LESBOT PROTOCOL');
                     $mail->addAddress($staff_email, $staff_name);
 
+                    // Content
                     $mail->isHTML(true);
                     $mail->Subject = "NEW NEURAL ASSIGNMENT: $request_id";
                     $mail->Body    = "
@@ -99,7 +109,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $mail->send();
                     $email_status = "(Staff Notified via Gmail)";
                 } catch (Exception $e) {
-                    $email_status = "(Mail Engine Offline)";
+                    // This logs the error to Heroku Logs if it fails
+                    error_log("Mail Error: " . $mail->ErrorInfo);
+                    $email_status = "(Mail Engine Error)";
                 }
             }
 
