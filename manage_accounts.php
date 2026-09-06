@@ -7,22 +7,29 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
     header("Location: login.php"); exit(); 
 }
 
+// --- FETCH USERS ---
 $search = $_GET['search'] ?? '';
-
 try {
-    $stmt = $pdo->prepare("SELECT user_id, name, email, role FROM users WHERE (user_id LIKE :s OR name LIKE :s) ORDER BY role ASC");
-    $stmt->execute(['s' => "%$search%"]);
-    $users = $stmt->fetchAll();
+    // FIXED: We use :s1 and :s2 to avoid the "Invalid parameter number" error
+    $sql = "SELECT user_id, name, email, role 
+            FROM users 
+            WHERE (user_id LIKE :s1 OR name LIKE :s2) 
+            ORDER BY role ASC, user_id ASC";
+            
+    $all_users = $pdo->prepare($sql);
     
-    // DEBUG: This will show at the top of your page if no users are found
-    if (count($users) === 0) {
-        echo "<div style='color:yellow; background:red; padding:10px; position:fixed; top:0; z-index:9999;'>DEBUG: Connection Success, but 0 users found in database '$db'</div>";
-    }
+    // We send the same search term to both placeholders
+    $all_users->execute([
+        's1' => "%$search%", 
+        's2' => "%$search%"
+    ]);
+    
+    $users = $all_users->fetchAll();
 
 } catch (PDOException $e) {
-    // This will stop the blank screen and show the REAL error
     die("<div style='color:white; background:red; padding:50px;'><h1>CRITICAL DATABASE ERROR</h1>" . $e->getMessage() . "</div>");
 }
+
 ?>
 <!-- Rest of your HTML stays exactly the same -->
 
