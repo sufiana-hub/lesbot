@@ -7,42 +7,21 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
     header("Location: login.php"); exit(); 
 }
 
-$admin_id = $_SESSION['std_id'] ?? 'AD001';
-
-// --- LOG ACCESS (Wrapped in try/catch so it doesn't crash the page) ---
-try {
-    $stmtAudit = $pdo->prepare("INSERT INTO system_audit_trail (admin_id, action_type, action_details) VALUES (?, 'ACCESS_HUB', 'Admin monitored entity archive hub')");
-    $stmtAudit->execute([$admin_id]);
-} catch (Exception $e) {
-    // If table missing, ignore so page can still load
-}
-
-// --- DELETE LOGIC ---
-if (isset($_GET['delete_id'])) {
-    $target_id = $_GET['delete_id'];
-    try {
-        $pdo->beginTransaction();
-        $stmtCheck = $pdo->prepare("SELECT name, role FROM users WHERE user_id = ?");
-        $stmtCheck->execute([$target_id]);
-        $userData = $stmtCheck->fetch();
-        
-        if ($userData) {
-            $pdo->prepare("DELETE FROM users WHERE user_id = ? AND role != 'Admin'")->execute([$target_id]);
-            $pdo->commit();
-            header("Location: manage_accounts.php?msg=purged"); exit();
-        }
-    } catch (Exception $e) { $pdo->rollBack(); }
-}
-
-// --- FETCH USERS ---
 $search = $_GET['search'] ?? '';
+
 try {
-    $all_users = $pdo->prepare("SELECT user_id, name, email, role FROM users WHERE (user_id LIKE :s OR name LIKE :s) ORDER BY role ASC");
-    $all_users->execute(['s' => "%$search%"]);
-    $users = $all_users->fetchAll();
-} catch (Exception $e) {
-    $users = []; // Prevent crash if table error
-    $error = "Database Error: " . $e->getMessage();
+    $stmt = $pdo->prepare("SELECT user_id, name, email, role FROM users WHERE (user_id LIKE :s OR name LIKE :s) ORDER BY role ASC");
+    $stmt->execute(['s' => "%$search%"]);
+    $users = $stmt->fetchAll();
+    
+    // DEBUG: This will show at the top of your page if no users are found
+    if (count($users) === 0) {
+        echo "<div style='color:yellow; background:red; padding:10px; position:fixed; top:0; z-index:9999;'>DEBUG: Connection Success, but 0 users found in database '$db'</div>";
+    }
+
+} catch (PDOException $e) {
+    // This will stop the blank screen and show the REAL error
+    die("<div style='color:white; background:red; padding:50px;'><h1>CRITICAL DATABASE ERROR</h1>" . $e->getMessage() . "</div>");
 }
 ?>
 <!-- Rest of your HTML stays exactly the same -->
