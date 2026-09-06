@@ -15,18 +15,18 @@ if ($is_localhost) {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ];
 } else {
-    // 2. PANTHEON CLOUD SETTINGS (New Production Home)
-    $host = 'dbserver.dev.572c262a-f6d3-4e1b-9b3b-0dac7b22bd24.drush.in';
-    $port = '11004'; // Pantheon specialized port
-    $db   = 'pantheon';
-    $user = 'pantheon';
-    $pass = 'HZp1rEdNRSAq4R26lPFkFZ0zMJIJUtuM'; // Paste your FULL password here
-    $options = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-}
+        // HEROKU / JAWSDB CLOUD SETTINGS
+        $host = 'kavfu5f7pido12mr.cbetxkdyhwsb.us-east-1.rds.amazonaws.com';
+        $db   = 'j249j0ae1u6sisye';
+        $user = 'mhc8p4pni9w39nj3';
+        $pass = 'u42brr4u3s1bg1mm';
+        $port = '3306'; // JawsDB uses the standard MySQL port
+        $options = [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ];
+    }
 
 try {
     // Establishing the Connection with the Port included
